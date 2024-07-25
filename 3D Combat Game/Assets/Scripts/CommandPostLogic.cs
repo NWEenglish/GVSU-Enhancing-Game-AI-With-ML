@@ -15,6 +15,8 @@ namespace Assets.Scripts
         public int PercentControlledByBlue { get; private set; }
         public int PercentControlledByRed { get; private set; }
 
+        private int TotalPercentToBeControlled => 500;
+
         private List<TeamType> AttackingTeams = new List<TeamType>();
 
         [SerializeField] private Material DefaultMaterial;
@@ -40,11 +42,11 @@ namespace Assets.Scripts
         private void UpdateColor()
         {
             float change = PercentControlledByRed > 0
-                ? (float)PercentControlledByRed / 100
-                : (float)PercentControlledByBlue / 100;
+                ? (float)PercentControlledByRed / TotalPercentToBeControlled
+                : (float)PercentControlledByBlue / TotalPercentToBeControlled;
 
-            float redPercent = (float)PercentControlledByRed / 100;
-            float bluePercent = (float)PercentControlledByBlue / 100;
+            float redPercent = (float)PercentControlledByRed / TotalPercentToBeControlled;
+            float bluePercent = (float)PercentControlledByBlue / TotalPercentToBeControlled;
 
             float red = redPercent > 0
                 ? redPercent
@@ -109,18 +111,18 @@ namespace Assets.Scripts
             }
 
             // Clean up percentages
-            if (PercentControlledByBlue > 100)
+            if (PercentControlledByBlue > TotalPercentToBeControlled)
             {
-                PercentControlledByBlue = 100;
+                PercentControlledByBlue = TotalPercentToBeControlled;
             }
             else if (PercentControlledByBlue < 0)
             {
                 PercentControlledByBlue = 0;
             }
 
-            if (PercentControlledByRed > 100)
+            if (PercentControlledByRed > TotalPercentToBeControlled)
             {
-                PercentControlledByRed = 100;
+                PercentControlledByRed = TotalPercentToBeControlled;
             }
             else if (PercentControlledByRed < 0)
             {
@@ -128,11 +130,11 @@ namespace Assets.Scripts
             }
 
             // Determine Control
-            if (PercentControlledByBlue == 100)
+            if (PercentControlledByBlue == TotalPercentToBeControlled)
             {
                 ControllingTeam = TeamType.BlueTeam;
             }
-            else if (PercentControlledByRed == 100)
+            else if (PercentControlledByRed == TotalPercentToBeControlled)
             {
                 ControllingTeam = TeamType.RedTeam;
             }
