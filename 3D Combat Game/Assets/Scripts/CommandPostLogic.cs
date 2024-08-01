@@ -152,7 +152,7 @@ namespace Assets.Scripts
             }
         }
 
-        private void OnTriggerExit(Collider other)
+        private void OnTriggerExit(Collider other) // TODO: fix for when entity is destroyed
         {
             if (other.TryGetComponent(out BaseEntity entity))
             {
