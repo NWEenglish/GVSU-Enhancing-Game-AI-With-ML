@@ -18,6 +18,7 @@ namespace Assets.Scripts
         private int TotalPercentToBeControlled => 500;
 
         private List<TeamType> AttackingTeams = new List<TeamType>();
+        private Player Player;
 
         [SerializeField] private Material DefaultMaterial;
         private Material ObejctMaterial;
@@ -28,6 +29,7 @@ namespace Assets.Scripts
             ObejctMaterial = new Material(DefaultMaterial);
 
             gameObject.GetComponentInChildren<MeshRenderer>().material = ObejctMaterial;
+            Player = Resources.FindObjectsOfTypeAll<Player>().FirstOrDefault();
         }
 
         private void FixedUpdate()
@@ -63,6 +65,7 @@ namespace Assets.Scripts
 
         private void TransitionControllingTeam(int blueTeam, int redTeam)
         {
+            TeamType prevControllingTeam = ControllingTeam;
             int playerDiff = Math.Abs(blueTeam - redTeam);
 
             TeamType mostPlayers = TeamType.Neutral;
@@ -141,6 +144,11 @@ namespace Assets.Scripts
             else if (PercentControlledByBlue == 0 && PercentControlledByRed == 0)
             {
                 ControllingTeam = TeamType.Neutral;
+            }
+
+            if (prevControllingTeam != ControllingTeam && Player != null)
+            {
+                Player.NotifyOfCommandPostChange(prevControllingTeam, ControllingTeam);
             }
         }
 
