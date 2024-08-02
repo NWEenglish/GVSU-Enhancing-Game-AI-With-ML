@@ -10,8 +10,6 @@ namespace Assets.Scripts.Entities
 {
     public class Player : BaseEntity
     {
-        public override TeamType Team { get; protected set; }
-
         [SerializeField]
         private TeamType _Team;
 
@@ -22,9 +20,7 @@ namespace Assets.Scripts.Entities
 
         private void Start()
         {
-            BaseStart();
-
-            Team = _Team;
+            BaseStart(_Team);
 
             var tmpUI = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>().ToList();
             TeamPointsUI.Add(TeamType.RedTeam, tmpUI.FirstOrDefault(ui => ui.name == Constants.HUD_RedPoints));

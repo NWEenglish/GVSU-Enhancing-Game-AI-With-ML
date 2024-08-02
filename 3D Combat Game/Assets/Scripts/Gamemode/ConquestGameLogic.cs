@@ -9,12 +9,12 @@ namespace Assets.Scripts.Gamemode.Conquest
     public class ConquestGameLogic : MonoBehaviour
     {
         public Dictionary<TeamType, int> TeamPoints { get; private set; } = new Dictionary<TeamType, int>();
+        public List<CommandPostLogic> CommandPosts { get; private set; } = new List<CommandPostLogic>();
 
         private const int PointsPerTick = 1;
         private const int TickLengthMs = 2500;
         private const int MaxPointsPerTeam = 500;
 
-        private List<CommandPostLogic> CommandPosts = new List<CommandPostLogic>();
         private DateTime LastTimePointsDistributed = DateTime.MinValue;
 
         private void Start()
