@@ -1,16 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace Assets.Scripts.Entities
 {
-    public class Bot : BaseEntity
+    public class BasicBot : BaseEntity
     {
         [SerializeField]
         private TeamType Team;
+        private TargetingStyle TargetingStyle;
 
         private Transform Target = null;
         private NavMeshAgent Agent;
@@ -19,6 +22,12 @@ namespace Assets.Scripts.Entities
 
         [SerializeField] private Material DefaultMaterial;
         private Material ObejctMaterial;
+
+        public void InitValues(TeamType team)
+        {
+            Team = team;
+            TargetingStyle = (TargetingStyle)Random.Range(0, Enum.GetValues(typeof(TargetingStyle)).Length);
+        }
 
         private void Start()
         {
@@ -53,7 +62,7 @@ namespace Assets.Scripts.Entities
                 var potentialTargets = GetEnemyCommandPosts();
                 if (potentialTargets.Any())
                 {
-                    SetNearestEnemyCommandPostAsTarget();
+                    SetEnemyCommandPostAsTarget();
                 }
                 else
                 {
@@ -70,7 +79,7 @@ namespace Assets.Scripts.Entities
                 {
                     if (targetPost.ControllingTeam == this.Team)
                     {
-                        SetNearestEnemyCommandPostAsTarget();
+                        SetEnemyCommandPostAsTarget();
                     }
                     else
                     {
@@ -87,19 +96,25 @@ namespace Assets.Scripts.Entities
             // If not at target, and not getting a new target, proceed
         }
 
-        private void SetNearestEnemyCommandPostAsTarget()
+        private void SetEnemyCommandPostAsTarget()
         {
-            Target = GetNearestEnemyCommandPost();
+            Target = TargetingStyle switch
+            {
+                TargetingStyle.ClosestFirst => GetEnemyCommandPosts().FirstOrDefault(),
+                TargetingStyle.FurthestFirst => GetEnemyCommandPosts().LastOrDefault(),
+                _ => GetRandomEnemyCommandPost()
+            };
+
             var targetPost = Target.GetComponent<CommandPostLogic>();
 
             Agent.SetDestination(Target.position);
             Agent.stoppingDistance = Random.Range(0, targetPost.Radius - 5);
         }
 
-        private Transform GetNearestEnemyCommandPost()
+        private Transform GetRandomEnemyCommandPost()
         {
-            return GetEnemyCommandPosts()
-                .FirstOrDefault();
+            var posts = GetEnemyCommandPosts();
+            return posts.ElementAtOrDefault(Random.Range(0, posts.Count));
         }
 
         private List<Transform> GetEnemyCommandPosts()

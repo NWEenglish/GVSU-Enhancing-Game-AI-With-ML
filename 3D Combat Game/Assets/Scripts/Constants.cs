@@ -3,6 +3,7 @@
     public static class Constants
     {
         public static string GeneralLogic => "GeneralLogic";
+        public static string SpawnableItems => "SpawnableItems";
 
         public static string HUD_RedPoints => "RedTeamPoints";
         public static string HUD_BluePoints => "BlueTeamPoints";
