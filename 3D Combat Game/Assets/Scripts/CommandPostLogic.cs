@@ -168,5 +168,21 @@ namespace Assets.Scripts
                 AttackingTeams.Remove(entity.Team);
             }
         }
+
+        public bool IsChanging()
+        {
+            Dictionary<TeamType, int> entityCount = new Dictionary<TeamType, int>();
+            foreach (TeamType teamType in AttackingTeams.Distinct())
+            {
+                entityCount.Add(teamType, AttackingTeams.FindAll(team => team == teamType).Count());
+            }
+
+            int largestTeamCount = entityCount
+                .OrderBy(kvp => kvp.Value)
+                .LastOrDefault()
+                .Value;
+
+            return largestTeamCount >= ((AttackingTeams.Count() / 2) + 1);
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -16,9 +17,9 @@ namespace Assets.Scripts.Entities
         private TeamType Team;
         private TargetingStyle TargetingStyle;
 
+        private float? TimeAtTargetSec = null;
         private Transform Target = null;
         private NavMeshAgent Agent;
-        private float? TimeAtTargetSec;
 
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
 
@@ -71,6 +72,11 @@ namespace Assets.Scripts.Entities
             {
                 SetCommandPostAsTarget();
             }
+            // Defensive play style always needs to be evaluating its position
+            else if (this.TargetingStyle == TargetingStyle.Defensive)
+            {
+                SetCommandPostAsTarget();
+            }
             else
             {
                 var targetPost = Target.GetComponent<CommandPostLogic>();
@@ -86,13 +92,12 @@ namespace Assets.Scripts.Entities
                     }
                     else
                     {
-                        if (TimeAtTargetSec == null)
+                        if (TimeAtTargetSec == null && Agent.hasPath)
                         {
                             TimeAtTargetSec = Time.time;
                         }
-                        else if (TimeAtTargetSec + TimeToConsiderStalemate <= Time.time)
+                        else if (TimeAtTargetSec + TimeToConsiderStalemate <= Time.time && !targetPost.IsChanging())
                         {
-                            TimeAtTargetSec = null;
                             SetCommandPostAsTarget(targetPost);
                         }
                     }
@@ -116,6 +121,7 @@ namespace Assets.Scripts.Entities
                 Target = GetRandomEnemyCommandPost(postToSkip);
             }
 
+            TimeAtTargetSec = null;
             var targetPost = Target.GetComponent<CommandPostLogic>();
             Agent.SetDestination(Target.position);
             Agent.stoppingDistance = Random.Range(5, targetPost.Radius - 5);
