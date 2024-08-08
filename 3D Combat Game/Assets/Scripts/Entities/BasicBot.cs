@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using UnityEngine;
@@ -17,11 +18,14 @@ namespace Assets.Scripts.Entities
 
         private Transform Target = null;
         private NavMeshAgent Agent;
+        private float? TimeAtTargetSec;
 
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
 
         [SerializeField] private Material DefaultMaterial;
         private Material ObejctMaterial;
+
+        private const float TimeToConsiderStalemate = 60f;
 
         public void InitValues(TeamType team)
         {
@@ -51,84 +55,117 @@ namespace Assets.Scripts.Entities
 
         private void FixedUpdate()
         {
+            // Due to timing issues, we might not have this list populated on startup
+            if (!PostLogicList.Any())
+            {
+                return;
+            }
+
             UpdateTarget();
         }
 
         private void UpdateTarget()
         {
-            // If no target, get a targt
+            // If no target, set a target
             if (Target == null)
             {
-                var potentialTargets = GetEnemyCommandPosts();
-                if (potentialTargets.Any())
-                {
-                    SetEnemyCommandPostAsTarget();
-                }
-                else
-                {
-                    // Go somewhere random?
-                }
+                SetCommandPostAsTarget();
             }
             else
             {
                 var targetPost = Target.GetComponent<CommandPostLogic>();
 
-                // If within bounds, wait for transion
+                // If within bounds, wait for transition
                 // Tryz @ https://discussions.unity.com/t/how-can-i-tell-when-a-navmeshagent-has-reached-its-destination/52403
                 if (Agent.remainingDistance <= Agent.stoppingDistance)
                 {
+                    // If target is now controlled, set a new target
                     if (targetPost.ControllingTeam == this.Team)
                     {
-                        SetEnemyCommandPostAsTarget();
+                        SetCommandPostAsTarget();
                     }
                     else
                     {
-                        // TODO - detect stalemate
-                        // If at target for x amount of time, might be stalemate.. random chance to leave
-
+                        if (TimeAtTargetSec == null)
+                        {
+                            TimeAtTargetSec = Time.time;
+                        }
+                        else if (TimeAtTargetSec + TimeToConsiderStalemate <= Time.time)
+                        {
+                            TimeAtTargetSec = null;
+                            SetCommandPostAsTarget(targetPost);
+                        }
                     }
                 }
             }
-
-
-            // If not at target, when to consider new target
-
-            // If not at target, and not getting a new target, proceed
         }
 
-        private void SetEnemyCommandPostAsTarget()
+        private void SetCommandPostAsTarget(CommandPostLogic postToSkip = null)
         {
             Target = TargetingStyle switch
             {
-                TargetingStyle.ClosestFirst => GetEnemyCommandPosts().FirstOrDefault(),
-                TargetingStyle.FurthestFirst => GetEnemyCommandPosts().LastOrDefault(),
-                _ => GetRandomEnemyCommandPost()
+                TargetingStyle.ClosestFirst => GetEnemyCommandPosts(postToSkip).FirstOrDefault(),
+                TargetingStyle.FurthestFirst => GetEnemyCommandPosts(postToSkip).LastOrDefault(),
+                TargetingStyle.Defensive => GetPostForDefensiveTarget(postToSkip),
+                _ => GetRandomEnemyCommandPost(postToSkip)
             };
 
-            var targetPost = Target.GetComponent<CommandPostLogic>();
+            // If no post was selected (probably because they were all captured), select a random one to go to
+            if (Target == null)
+            {
+                Target = GetRandomEnemyCommandPost(postToSkip);
+            }
 
+            var targetPost = Target.GetComponent<CommandPostLogic>();
             Agent.SetDestination(Target.position);
-            Agent.stoppingDistance = Random.Range(0, targetPost.Radius - 5);
+            Agent.stoppingDistance = Random.Range(5, targetPost.Radius - 5);
         }
 
-        private Transform GetRandomEnemyCommandPost()
+        private Transform GetRandomEnemyCommandPost(CommandPostLogic postToSkip = null)
         {
-            var posts = GetEnemyCommandPosts();
+            var posts = GetEnemyCommandPosts(postToSkip);
             return posts.ElementAtOrDefault(Random.Range(0, posts.Count));
         }
 
-        private List<Transform> GetEnemyCommandPosts()
+        private List<Transform> GetEnemyCommandPosts(CommandPostLogic postToSkip = null)
         {
             return PostLogicList
-                .Where(post => post.ControllingTeam != this.Team)
+                .Where(post => post.ControllingTeam != this.Team && post.GetComponent<CommandPostLogic>() != postToSkip)
                 .Select(post => post.gameObject.transform)
                 .OrderBy(trans => this.transform.GetDistanceTo(trans))
                 .ToList();
         }
 
-        private bool ShouldUseRandom()
+        private Transform GetPostForDefensiveTarget(CommandPostLogic postToSkip = null)
         {
-            return Random.Range(0, 100) > 90;
+            var spawnName = this.Team == TeamType.BlueTeam
+                ? Constants.Spawn_BlueTeam
+                : Constants.Spawn_RedTeam;
+
+            var spawn = GameObject.Find(spawnName);
+
+            // Closest enemy post
+            var closestEnemyPost = PostLogicList
+                .Where(post => post.ControllingTeam != this.Team && post.GetComponent<CommandPostLogic>() != postToSkip)
+                .Select(post => post.gameObject.transform)
+                .OrderBy(trans => spawn.transform.GetDistanceTo(trans))
+                .FirstOrDefault();
+
+            // Furthest captured post before closest enemy post
+            var furthestChainedCapturedPost = PostLogicList
+                .Where(post => post.ControllingTeam == this.Team
+                    && spawn.transform.GetDistanceTo(post.transform) < spawn.transform.GetDistanceTo(closestEnemyPost.transform)
+                    && post.GetComponent<CommandPostLogic>() != postToSkip)
+                .Select(post => post.gameObject.transform)
+                .OrderByDescending(trans => spawn.transform.GetDistanceTo(trans))
+                .FirstOrDefault();
+
+            // If no captured post, target closest enemy, else furthest captured
+            var target = furthestChainedCapturedPost != null
+                ? furthestChainedCapturedPost
+                : closestEnemyPost;
+
+            return target;
         }
     }
 }
