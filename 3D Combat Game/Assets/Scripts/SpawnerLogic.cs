@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Entities;
+﻿using Assets.Scripts.Constants;
+using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace Assets.Scripts
 
         private void Start()
         {
-            var spawnableObjects = GameObject.Find(Constants.SpawnableItems);
+            var spawnableObjects = GameObject.Find(Objects.SpawnableItems);
             var basicBot = spawnableObjects.GetComponentInChildren<BasicBot>(true);
 
             BasicBot newBot = Instantiate(basicBot, this.transform);

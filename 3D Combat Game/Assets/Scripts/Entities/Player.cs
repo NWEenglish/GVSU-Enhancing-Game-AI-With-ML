@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Constants;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Assets.Scripts.Gamemode.Conquest;
@@ -23,13 +24,13 @@ namespace Assets.Scripts.Entities
             BaseStart(_Team);
 
             var tmpUI = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>().ToList();
-            TeamPointsUI.Add(TeamType.RedTeam, tmpUI.FirstOrDefault(ui => ui.name == Constants.HUD_RedPoints));
-            TeamPointsUI.Add(TeamType.BlueTeam, tmpUI.FirstOrDefault(ui => ui.name == Constants.HUD_BluePoints));
+            TeamPointsUI.Add(TeamType.RedTeam, tmpUI.FirstOrDefault(ui => ui.name == HUD.RedPoints));
+            TeamPointsUI.Add(TeamType.BlueTeam, tmpUI.FirstOrDefault(ui => ui.name == HUD.BluePoints));
 
-            var gameLogic = GameObject.Find(Constants.GeneralLogic);
+            var gameLogic = GameObject.Find(Objects.GeneralLogic);
             var audioSources = gameLogic.GetComponentsInChildren<AudioSource>();
-            AreaSecuredAudio = audioSources.FirstOrDefault(src => src.clip.name == Constants.Audio_AreaSecured);
-            AreaLostAudio = audioSources.FirstOrDefault(src => src.clip.name == Constants.Audio_AreaLost);
+            AreaSecuredAudio = audioSources.FirstOrDefault(src => src.clip.name == Audio.AreaSecured);
+            AreaLostAudio = audioSources.FirstOrDefault(src => src.clip.name == Audio.AreaLost);
         }
 
         private void FixedUpdate()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using Assets.Scripts.Constants;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Unity.VisualScripting;
@@ -145,8 +146,8 @@ namespace Assets.Scripts.Entities
         private Transform GetPostForDefensiveTarget(CommandPostLogic postToSkip = null)
         {
             var spawnName = this.Team == TeamType.BlueTeam
-                ? Constants.Spawn_BlueTeam
-                : Constants.Spawn_RedTeam;
+                ? Objects.BlueTeam
+                : Objects.RedTeam;
 
             var spawn = GameObject.Find(spawnName);
 
