@@ -3,6 +3,7 @@ using System.Linq;
 using Assets.Scripts.Constants;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
+using Assets.Scripts.Gamemode;
 using Assets.Scripts.Gamemode.Conquest;
 using TMPro;
 using UnityEngine;
@@ -11,9 +12,6 @@ namespace Assets.Scripts.Entities
 {
     public class Player : BaseEntity
     {
-        [SerializeField]
-        private TeamType _Team;
-
         private Dictionary<TeamType, TextMeshProUGUI> TeamPointsUI = new Dictionary<TeamType, TextMeshProUGUI>();
 
         private AudioSource AreaSecuredAudio;
@@ -21,7 +19,8 @@ namespace Assets.Scripts.Entities
 
         private void Start()
         {
-            BaseStart(_Team);
+            GameSettings gameSettings = GameObject.Find(Objects.GameSettings).GetComponent<GameSettings>();
+            BaseStart(gameSettings.PlayersTeam.Value);
 
             var tmpUI = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>().ToList();
             TeamPointsUI.Add(TeamType.RedTeam, tmpUI.FirstOrDefault(ui => ui.name == HUD.RedPoints));

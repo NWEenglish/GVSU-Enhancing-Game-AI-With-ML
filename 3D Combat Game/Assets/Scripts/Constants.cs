@@ -7,6 +7,7 @@
         public static string SpawnableItems => "SpawnableItems";
         public static string BlueTeam => "BlueTeamSpawn";
         public static string RedTeam => "RedTeamSpawn";
+        public static string Player => "FirstPersonController";
     }
 
     public static class HUD

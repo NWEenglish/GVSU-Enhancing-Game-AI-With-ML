@@ -408,6 +408,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 1
+  CanPlayerSpawnHere: 1
 --- !u!1 &145865559
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,6 +522,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 1
+  CanPlayerSpawnHere: 0
 --- !u!1 &172120787
 GameObject:
   m_ObjectHideFlags: 0
@@ -845,6 +847,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 1
+  CanPlayerSpawnHere: 0
 --- !u!1 &432352555
 GameObject:
   m_ObjectHideFlags: 0
@@ -1455,6 +1458,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 0
+  CanPlayerSpawnHere: 0
 --- !u!1 &704590517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1500,6 +1504,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 1
+  CanPlayerSpawnHere: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -2211,6 +2216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 0
+  CanPlayerSpawnHere: 0
 --- !u!1 &1374204149
 GameObject:
   m_ObjectHideFlags: 0
@@ -2256,6 +2262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 0
+  CanPlayerSpawnHere: 1
 --- !u!1 &1375593962
 GameObject:
   m_ObjectHideFlags: 0
@@ -2468,6 +2475,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 1
+  CanPlayerSpawnHere: 0
 --- !u!1 &1509850131
 GameObject:
   m_ObjectHideFlags: 0
@@ -2793,6 +2801,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 0
+  CanPlayerSpawnHere: 0
 --- !u!1 &1772195653
 GameObject:
   m_ObjectHideFlags: 0
@@ -2943,6 +2952,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 0
+  CanPlayerSpawnHere: 0
 --- !u!1 &1907218273
 GameObject:
   m_ObjectHideFlags: 0
