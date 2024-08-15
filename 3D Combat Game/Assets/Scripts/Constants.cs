@@ -25,4 +25,11 @@
         public static string MainMenu => "MainMenu";
         public static string ConqustGameMode => "SampleScene";
     }
+
+    public static class MainMenu
+    {
+        public static string MainScreen => "MainMenu";
+        public static string Controls => "ControlsMenu";
+        public static string Credits => "CreditsMenu";
+    }
 }
