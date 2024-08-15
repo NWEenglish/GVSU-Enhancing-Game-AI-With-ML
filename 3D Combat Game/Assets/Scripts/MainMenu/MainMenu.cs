@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using Assets.Scripts.Enums;
+using Assets.Scripts.Gamemode;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +11,7 @@ namespace Assets.Scripts.MainMenu
     {
         private Dictionary<MainMenuItem, GameObject> MenuItems;
         private GameObject CurrentActiveScreen;
+        private GameSettings GameSettings;
 
         private void Start()
         {
@@ -20,14 +23,25 @@ namespace Assets.Scripts.MainMenu
                 { MainMenuItem.ConfigureGame, GameObject.Find(Constants.MainMenu.ConfigureGame) },
             };
 
+            GameSettings = GameObject.Find(Constants.Objects.GameSettings).GetComponent<GameSettings>();
+            DontDestroyOnLoad(GameSettings);
+
             DisableAllScreens();
             ReturnToMainMenu();
         }
 
-        //public void StartGame()
-        //{
-        //    SceneManager.LoadScene(Scenes.ConqustGameMode);
-        //}
+        public void StartGame()
+        {
+            // Get configure game settings
+            string redTeamAILevel = GameObject.Find(Constants.MainMenu.RedTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
+            string blueTeamAILevel = GameObject.Find(Constants.MainMenu.BlueTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
+            string playerTeam = GameObject.Find(Constants.MainMenu.PlayerTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
+
+            GameSettings.Configure(redTeamAILevel, blueTeamAILevel, playerTeam);
+
+            // Launch game
+            SceneManager.LoadScene(Constants.Scenes.ConqustGameMode);
+        }
 
         public void ShowConfigureGame()
         {

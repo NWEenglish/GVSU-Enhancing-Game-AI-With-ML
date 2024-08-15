@@ -2,6 +2,7 @@
 {
     public static class Objects
     {
+        public static string GameSettings => "GameSettings";
         public static string GeneralLogic => "GeneralLogic";
         public static string SpawnableItems => "SpawnableItems";
         public static string BlueTeam => "BlueTeamSpawn";
@@ -28,9 +29,15 @@
 
     public static class MainMenu
     {
+        // Menu Screens
         public static string MainScreen => "MainMenu";
         public static string Controls => "ControlsMenu";
         public static string Credits => "CreditsMenu";
         public static string ConfigureGame => "ConfigureGameMenu";
+
+        // Drop Down Fields
+        public static string RedTeamDropDown => "RedTeamBotType";
+        public static string BlueTeamDropDown => "BlueTeamBotType";
+        public static string PlayerTeamDropDown => "PlayersTeam";
     }
 }
