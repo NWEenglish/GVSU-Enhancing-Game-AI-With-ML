@@ -4,6 +4,7 @@
     {
         MainMenu,
         Controls,
-        Credits
+        Credits,
+        ConfigureGame
     }
 }

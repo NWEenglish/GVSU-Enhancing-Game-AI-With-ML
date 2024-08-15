@@ -17,6 +17,7 @@ namespace Assets.Scripts.MainMenu
                 { MainMenuItem.MainMenu, GameObject.Find(Constants.MainMenu.MainScreen) },
                 { MainMenuItem.Controls, GameObject.Find(Constants.MainMenu.Controls) },
                 { MainMenuItem.Credits, GameObject.Find(Constants.MainMenu.Credits) },
+                { MainMenuItem.ConfigureGame, GameObject.Find(Constants.MainMenu.ConfigureGame) },
             };
 
             DisableAllScreens();
@@ -28,9 +29,9 @@ namespace Assets.Scripts.MainMenu
         //    SceneManager.LoadScene(Scenes.ConqustGameMode);
         //}
 
-        public void ShowStartGameOptions()
+        public void ShowConfigureGame()
         {
-            // TODO
+            EnableScreen(MenuItems.GetValueOrDefault(MainMenuItem.ConfigureGame));
         }
 
         public void ShowControls()

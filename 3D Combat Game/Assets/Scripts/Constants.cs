@@ -31,5 +31,6 @@
         public static string MainScreen => "MainMenu";
         public static string Controls => "ControlsMenu";
         public static string Credits => "CreditsMenu";
+        public static string ConfigureGame => "ConfigureGameMenu";
     }
 }
