@@ -9,13 +9,13 @@ namespace Assets.Scripts.Gamemode.Conquest
     public class ConquestGameLogic : MonoBehaviour
     {
         public Dictionary<TeamType, int> TeamPoints { get; private set; } = new Dictionary<TeamType, int>();
+        public List<CommandPostLogic> CommandPosts { get; private set; } = new List<CommandPostLogic>();
 
         private const int PointsPerTick = 1;
-        private const int TickLengthMs = 2500;
         private const int MaxPointsPerTeam = 500;
+        private const float TickLengthSec = 2.5f;
 
-        private List<CommandPostLogic> CommandPosts = new List<CommandPostLogic>();
-        private DateTime LastTimePointsDistributed = DateTime.MinValue;
+        private float LastTimePointsDistributed;
 
         private void Start()
         {
@@ -25,6 +25,7 @@ namespace Assets.Scripts.Gamemode.Conquest
             }
 
             CommandPosts = Resources.FindObjectsOfTypeAll<CommandPostLogic>().ToList();
+            LastTimePointsDistributed = Time.time;
         }
 
         private void FixedUpdate()
@@ -34,14 +35,14 @@ namespace Assets.Scripts.Gamemode.Conquest
 
         private void UpdatePoints()
         {
-            if (LastTimePointsDistributed.AddMilliseconds(TickLengthMs) <= DateTime.Now)
+            if (LastTimePointsDistributed + TickLengthSec <= Time.time)
             {
                 CommandPosts
                     .Where(post => TeamTypeHelper.GetPlayableTeams().Contains(post.ControllingTeam))
                     .ToList()
                     .ForEach(post => TeamPoints[post.ControllingTeam] = CalculateUpdatedPoints(TeamPoints[post.ControllingTeam]));
 
-                LastTimePointsDistributed = DateTime.Now;
+                LastTimePointsDistributed = Time.time;
             }
         }
 

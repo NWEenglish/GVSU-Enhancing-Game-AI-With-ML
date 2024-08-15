@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -11,6 +10,7 @@ namespace Assets.Scripts
     public class CommandPostLogic : MonoBehaviour
     {
         public TeamType ControllingTeam { get; private set; }
+        public float Radius { get; private set; }
 
         public int PercentControlledByBlue { get; private set; }
         public int PercentControlledByRed { get; private set; }
@@ -26,6 +26,7 @@ namespace Assets.Scripts
         private void Start()
         {
             ControllingTeam = TeamType.Neutral;
+            Radius = GetComponent<SphereCollider>().radius;
             ObejctMaterial = new Material(DefaultMaterial);
 
             gameObject.GetComponentInChildren<MeshRenderer>().material = ObejctMaterial;
@@ -166,6 +167,22 @@ namespace Assets.Scripts
             {
                 AttackingTeams.Remove(entity.Team);
             }
+        }
+
+        public bool IsChanging()
+        {
+            Dictionary<TeamType, int> entityCount = new Dictionary<TeamType, int>();
+            foreach (TeamType teamType in AttackingTeams.Distinct())
+            {
+                entityCount.Add(teamType, AttackingTeams.FindAll(team => team == teamType).Count());
+            }
+
+            int largestTeamCount = entityCount
+                .OrderBy(kvp => kvp.Value)
+                .LastOrDefault()
+                .Value;
+
+            return largestTeamCount >= ((AttackingTeams.Count() / 2) + 1);
         }
     }
 }
