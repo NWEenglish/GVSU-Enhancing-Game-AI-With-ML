@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Constants;
 using Assets.Scripts.Enums;
+using TMPro;
 using UnityEngine;
 
 namespace Assets.Scripts.Gamemode.Conquest
@@ -16,6 +18,9 @@ namespace Assets.Scripts.Gamemode.Conquest
         private const float TickLengthSec = 2.5f;
 
         private float LastTimePointsDistributed;
+        private GameObject GameOverPanel;
+
+        private bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
 
         private void Start()
         {
@@ -26,11 +31,45 @@ namespace Assets.Scripts.Gamemode.Conquest
 
             CommandPosts = Resources.FindObjectsOfTypeAll<CommandPostLogic>().ToList();
             LastTimePointsDistributed = Time.time;
+
+            GameOverPanel = GameObject.Find(HUD.GameOverScreen);
+            GameOverPanel.SetActive(false);
         }
 
         private void FixedUpdate()
         {
-            UpdatePoints();
+            if (!IsGameOver)
+            {
+                UpdatePoints();
+            }
+            else
+            {
+                HandleGameOver();
+            }
+        }
+
+        private void HandleGameOver()
+        {
+            GameOverPanel.SetActive(true);
+            var gameOverTextMesh = GameObject.Find(HUD.GameOverMessage).GetComponent<TextMeshProUGUI>();
+
+            List<TeamType> winningTeams = TeamPoints
+                .Where(kvp => kvp.Value >= MaxPointsPerTeam)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            // Tie
+            if (winningTeams.Count() > 1)
+            {
+                gameOverTextMesh.text = "Game Ended in a Tie";
+            }
+            // One winning team
+            else if (winningTeams.Count() == 1)
+            {
+                TeamType winningTeam = winningTeams.First();
+                string winnningTeamName = TeamTypeHelper.GetSimpleTeamName(winningTeam);
+                gameOverTextMesh.text = $"{winnningTeamName} Team Won";
+            }
         }
 
         private void UpdatePoints()

@@ -14,6 +14,8 @@
     {
         public static string RedPoints => "RedTeamPoints";
         public static string BluePoints => "BlueTeamPoints";
+        public static string GameOverScreen => "GameOverPanel";
+        public static string GameOverMessage => "GameOverMessage";
     }
 
     public static class Audio

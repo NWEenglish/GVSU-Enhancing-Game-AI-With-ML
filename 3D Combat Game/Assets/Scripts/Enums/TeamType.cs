@@ -23,6 +23,18 @@ namespace Assets.Scripts.Enums
             return PlayableTeams;
         }
 
+        public static string GetSimpleTeamName(TeamType team)
+        {
+            string retName = team switch
+            {
+                TeamType.BlueTeam => "Blue",
+                TeamType.RedTeam => "Red",
+                _ => throw new ArgumentException(nameof(team))
+            };
+
+            return retName;
+        }
+
         public static TeamType GetTeamType(string teamName)
         {
             TeamType retTeamType;
