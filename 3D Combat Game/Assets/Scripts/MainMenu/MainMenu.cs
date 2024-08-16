@@ -28,6 +28,7 @@ namespace Assets.Scripts.MainMenu
 
             DisableAllScreens();
             ReturnToMainMenu();
+            Cursor.lockState = CursorLockMode.None;
         }
 
         public void StartGame()
