@@ -16,6 +16,8 @@ namespace Assets.Scripts.Entities
 
         private AudioSource AreaSecuredAudio;
         private AudioSource AreaLostAudio;
+        private AudioSource GameWonAudio;
+        private AudioSource GameLostAudio;
 
         private void Start()
         {
@@ -30,6 +32,8 @@ namespace Assets.Scripts.Entities
             var audioSources = gameLogic.GetComponentsInChildren<AudioSource>();
             AreaSecuredAudio = audioSources.FirstOrDefault(src => src.clip.name == Audio.AreaSecured);
             AreaLostAudio = audioSources.FirstOrDefault(src => src.clip.name == Audio.AreaLost);
+            GameWonAudio = audioSources.FirstOrDefault(src => src.clip.name == Audio.GameWon);
+            GameLostAudio = audioSources.FirstOrDefault(src => src.clip.name == Audio.GameLost);
         }
 
         private void FixedUpdate()
@@ -47,6 +51,15 @@ namespace Assets.Scripts.Entities
             {
                 AreaSecuredAudio.TryPlay();
             }
+        }
+
+        public void NotifyOfGameResult(bool playerWon)
+        {
+            var audioSource = playerWon
+                ? GameWonAudio
+                : GameLostAudio;
+
+            audioSource.TryPlay();
         }
 
         private void UpdateUI()

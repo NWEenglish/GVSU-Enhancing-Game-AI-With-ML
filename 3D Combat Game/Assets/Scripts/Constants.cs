@@ -22,6 +22,8 @@
     {
         public static string AreaSecured => "09._area_secured";
         public static string AreaLost => "10._area_lost";
+        public static string GameLost => "Game Over II.ogg";
+        public static string GameWon => "come on dance.mp3";
     }
 
     public static class Scenes

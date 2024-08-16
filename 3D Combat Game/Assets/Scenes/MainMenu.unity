@@ -2697,8 +2697,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "Student:\\tNicholas English\nAdvisor:\\tDr. DeVries\n\n<b>Audio</b>\n
-    \u2022 <i>Creepy Forest</i> - Augmentality (Brandon Morris)\n \u2022 <i>Trance
-    Menu</i> - Rezoner\n \u2022 <i>Video Game Announcer</i> - VoiceBosch\n"
+    \u2022 <i>Come on Dance</i> - Fluffclipse\n \u2022 <i>Creepy Forest</i> - Augmentality
+    (Brandon Morris)\n \u2022 <i>Game Over II</i> - Kistol\n \u2022 <i>Trance Menu</i>
+    - Rezoner\n \u2022 <i>Video Game Announcer</i> - VoiceBosch\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
