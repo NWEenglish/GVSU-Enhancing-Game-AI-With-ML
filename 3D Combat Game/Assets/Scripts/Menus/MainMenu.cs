@@ -17,10 +17,10 @@ namespace Assets.Scripts.MainMenu
         {
             MenuItems = new Dictionary<MainMenuItem, GameObject>()
             {
-                { MainMenuItem.MainMenu, GameObject.Find(Constants.MainMenu.MainScreen) },
-                { MainMenuItem.Controls, GameObject.Find(Constants.MainMenu.Controls) },
-                { MainMenuItem.Credits, GameObject.Find(Constants.MainMenu.Credits) },
-                { MainMenuItem.ConfigureGame, GameObject.Find(Constants.MainMenu.ConfigureGame) },
+                { MainMenuItem.MainMenu, GameObject.Find(Constants.MenuScreens.MainScreen) },
+                { MainMenuItem.Controls, GameObject.Find(Constants.MenuScreens.Controls) },
+                { MainMenuItem.Credits, GameObject.Find(Constants.MenuScreens.Credits) },
+                { MainMenuItem.ConfigureGame, GameObject.Find(Constants.MenuScreens.ConfigureGame) },
             };
 
             GameSettings = GameObject.Find(Constants.Objects.GameSettings).GetComponent<GameSettings>();
@@ -34,9 +34,9 @@ namespace Assets.Scripts.MainMenu
         public void StartGame()
         {
             // Get configure game settings
-            string redTeamAILevel = GameObject.Find(Constants.MainMenu.RedTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
-            string blueTeamAILevel = GameObject.Find(Constants.MainMenu.BlueTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
-            string playerTeam = GameObject.Find(Constants.MainMenu.PlayerTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
+            string redTeamAILevel = GameObject.Find(Constants.MenuScreens.RedTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
+            string blueTeamAILevel = GameObject.Find(Constants.MenuScreens.BlueTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
+            string playerTeam = GameObject.Find(Constants.MenuScreens.PlayerTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
 
             GameSettings.Configure(redTeamAILevel, blueTeamAILevel, playerTeam);
 

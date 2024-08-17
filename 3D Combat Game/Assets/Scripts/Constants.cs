@@ -32,7 +32,7 @@
         public static string ConqustGameMode => "SampleScene";
     }
 
-    public static class MainMenu
+    public static class MenuScreens
     {
         // Menu Screens
         public static string MainScreen => "MainMenu";
@@ -44,5 +44,8 @@
         public static string RedTeamDropDown => "RedTeamBotType";
         public static string BlueTeamDropDown => "BlueTeamBotType";
         public static string PlayerTeamDropDown => "PlayersTeam";
+
+        // Pause Screen
+        public static string PauseScreen => "PauseMenuPanel";
     }
 }
