@@ -1,8 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Constants;
+using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Assets.Scripts.Gamemode.Conquest
 {
@@ -16,6 +20,13 @@ namespace Assets.Scripts.Gamemode.Conquest
         private const float TickLengthSec = 2.5f;
 
         private float LastTimePointsDistributed;
+        private GameObject GameOverPanel;
+
+        private float? GameOverProcessStart;
+        private const float GameOverProcessLength = 15f; // 15 secs
+        private bool IsRunningGameOverProcess => GameOverProcessStart != null;
+
+        private bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
 
         private void Start()
         {
@@ -26,11 +37,68 @@ namespace Assets.Scripts.Gamemode.Conquest
 
             CommandPosts = Resources.FindObjectsOfTypeAll<CommandPostLogic>().ToList();
             LastTimePointsDistributed = Time.time;
+
+            GameOverPanel = GameObject.Find(HUD.GameOverScreen);
+            GameOverPanel.SetActive(false);
         }
 
         private void FixedUpdate()
         {
-            UpdatePoints();
+            if (!IsRunningGameOverProcess && !IsGameOver)
+            {
+                UpdatePoints();
+            }
+            else if (IsGameOver)
+            {
+                if (!IsRunningGameOverProcess)
+                {
+                    StartGameOverProcess();
+                }
+                else
+                {
+                    ContinueGameOverProcess();
+                }
+            }
+        }
+
+        private void StartGameOverProcess()
+        {
+            GameOverProcessStart = Time.time;
+            GameOverPanel.SetActive(true);
+            var gameOverTextMesh = GameObject.Find(HUD.GameOverMessage).GetComponent<TextMeshProUGUI>();
+
+            List<TeamType> winningTeams = TeamPoints
+                .Where(kvp => kvp.Value >= MaxPointsPerTeam)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            // Tie
+            if (winningTeams.Count() > 1)
+            {
+                gameOverTextMesh.text = "Game Ended in a Tie";
+            }
+            // One winning team
+            else if (winningTeams.Count() == 1)
+            {
+                TeamType winningTeam = winningTeams.First();
+                string winnningTeamName = TeamTypeHelper.GetSimpleTeamName(winningTeam);
+                gameOverTextMesh.text = $"{winnningTeamName} Team Won";
+            }
+
+            // Play music based on what team the player was on
+            Player player = GameObject.Find(Objects.Player).GetComponent<Player>();
+            bool isPlayerWinner = winningTeams.Contains(player.Team);
+            player.NotifyOfGameResult(isPlayerWinner);
+        }
+
+        private void ContinueGameOverProcess()
+        {
+            bool shouldEndGame = Time.time >= GameOverProcessStart + GameOverProcessLength;
+
+            if (shouldEndGame)
+            {
+                SceneManager.LoadScene(Scenes.MainMenu);
+            }
         }
 
         private void UpdatePoints()
