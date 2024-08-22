@@ -60,7 +60,11 @@ namespace Assets.Scripts
 
         private void SpawnAsSmartBot(GameObject spawnableObjects)
         {
+            var smartBot = spawnableObjects.GetComponentInChildren<SmartBot>(true);
 
+            SmartBot newBot = Instantiate(smartBot, this.transform);
+            newBot.InitValues(Team);
+            newBot.gameObject.SetActive(true);
         }
     }
 }

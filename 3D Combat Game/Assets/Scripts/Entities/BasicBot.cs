@@ -5,43 +5,24 @@ using Assets.Scripts.Constants;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using UnityEngine;
-using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 namespace Assets.Scripts.Entities
 {
-    public class BasicBot : BaseEntity
+    public class BasicBot : BaseBot
     {
-        [SerializeField]
-        private TeamType Team;
         private TargetingStyle TargetingStyle;
 
         private float? TimeAtTargetSec = null;
-        private Transform Target = null;
-        private NavMeshAgent Agent;
 
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
-
-        [SerializeField] private Material DefaultMaterial;
-        private Material ObejctMaterial;
 
         private const float TimeToConsiderStalemate = 60f;
 
         public void InitValues(TeamType team)
         {
-            Team = team;
+            BaseBotStart(team);
             TargetingStyle = (TargetingStyle)Random.Range(0, Enum.GetValues(typeof(TargetingStyle)).Length);
-        }
-
-        private void Start()
-        {
-            BaseStart(Team);
-
-            Agent = GetComponent<NavMeshAgent>();
-
-            ObejctMaterial = new Material(DefaultMaterial);
-            ObejctMaterial.color = GetTeamColor();
-            gameObject.GetComponentInChildren<MeshRenderer>().material = ObejctMaterial;
         }
 
         private void Update()

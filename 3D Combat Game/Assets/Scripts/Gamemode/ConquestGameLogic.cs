@@ -26,7 +26,7 @@ namespace Assets.Scripts.Gamemode.Conquest
         private const float GameOverProcessLength = 20f;
         private bool IsRunningGameOverProcess => GameOverProcessStart != null;
 
-        private bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
+        public bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
 
         private void Start()
         {
