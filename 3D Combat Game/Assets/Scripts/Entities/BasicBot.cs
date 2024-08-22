@@ -134,20 +134,18 @@ namespace Assets.Scripts.Entities
 
         private List<Transform> GetEnemyCommandPosts(CommandPostLogic postToSkip = null)
         {
+            var spawn = GetSpawn();
+
             return PostLogicList
                 .Where(post => post.ControllingTeam != this.Team && post.GetComponent<CommandPostLogic>() != postToSkip)
                 .Select(post => post.gameObject.transform)
-                .OrderBy(trans => this.transform.GetDistanceTo(trans))
+                .OrderBy(trans => spawn.transform.GetDistanceTo(trans))
                 .ToList();
         }
 
         private Transform GetPostForDefensiveTarget(CommandPostLogic postToSkip = null)
         {
-            var spawnName = this.Team == TeamType.BlueTeam
-                ? Objects.BlueTeam
-                : Objects.RedTeam;
-
-            var spawn = GameObject.Find(spawnName);
+            var spawn = GetSpawn();
 
             // Closest enemy post
             var closestEnemyPost = PostLogicList
@@ -171,6 +169,16 @@ namespace Assets.Scripts.Entities
                 : closestEnemyPost;
 
             return target;
+        }
+
+        private GameObject GetSpawn()
+        {
+            var spawnName = this.Team == TeamType.BlueTeam
+                ? Objects.BlueTeam
+                : Objects.RedTeam;
+
+            GameObject spawn = GameObject.Find(spawnName);
+            return spawn;
         }
     }
 }

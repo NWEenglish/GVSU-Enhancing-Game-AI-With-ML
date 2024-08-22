@@ -23,7 +23,7 @@ namespace Assets.Scripts.Gamemode.Conquest
         private GameObject GameOverPanel;
 
         private float? GameOverProcessStart;
-        private const float GameOverProcessLength = 15f; // 15 secs
+        private const float GameOverProcessLength = 20f;
         private bool IsRunningGameOverProcess => GameOverProcessStart != null;
 
         private bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
