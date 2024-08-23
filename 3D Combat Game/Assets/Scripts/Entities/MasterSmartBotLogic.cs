@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Assets.Scripts.Gamemode.Conquest;
@@ -13,6 +14,7 @@ namespace Assets.Scripts.Entities
     {
         private ConquestGameLogic GameLogic;
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
+        private Dictionary<CommandPostLogic, TeamType> LastKnownControl = new Dictionary<CommandPostLogic, TeamType>();
 
         private List<SmartBot> SmartBots = new List<SmartBot>();
 
@@ -21,7 +23,7 @@ namespace Assets.Scripts.Entities
         private float TimeBetweenLogs = 20f;
         private bool HasSavedRecords = false;
 
-        private BotStates States = new BotStates();
+        private GameState StateOfGame = new GameState();
 
         private string OutputDirectory = @"D:\Code\GVSU-Enhancing-Game-AI-With-ML\Data Processing\Raw Data";
 
@@ -42,13 +44,17 @@ namespace Assets.Scripts.Entities
             {
                 if (NumberOfLogs == 0 || GameLogic.IsGameOver || Time.time >= LastLogTime + TimeBetweenLogs)
                 {
-                    UpdateState();
+                    UpdateState(LogEventType.TimerTriggered);
+                }
+                else if (HasPostControlChanged())
+                {
+                    UpdateState(LogEventType.CommandPostChange);
                 }
 
                 if (GameLogic.IsGameOver)
                 {
                     // Save records
-                    string json = JsonUtility.ToJson(States);
+                    string json = JsonUtility.ToJson(StateOfGame);
 
                     var writer = File.CreateText($"{OutputDirectory}\\{DateTime.Now.ToFileTime()}.txt");
                     writer.Write(json);
@@ -59,11 +65,31 @@ namespace Assets.Scripts.Entities
             }
         }
 
-        private void UpdateState()
+        private bool HasPostControlChanged()
         {
+            bool retHasChanged = false;
+
+            // First pass will be empty
+            if (LastKnownControl.Any())
+            {
+                retHasChanged = PostLogicList.Any(post => LastKnownControl[post] != post.ControllingTeam);
+            }
+
+            LastKnownControl.Clear();
+            PostLogicList.ForEach(post => LastKnownControl.Add(post, post.ControllingTeam));
+
+            return retHasChanged;
+        }
+
+        private void UpdateState(LogEventType logEvent)
+        {
+            if (logEvent == LogEventType.TimerTriggered)
+            {
+                LastLogTime = Time.time;
+            }
+
             NumberOfLogs++;
-            LastLogTime = Time.time;
-            SmartBots.ForEach(bot => RequestBotState(bot));
+            SmartBots.ForEach(bot => RequestBotState(bot, logEvent));
         }
 
         public void SubscribeTo(SmartBot smartBot)
@@ -71,45 +97,67 @@ namespace Assets.Scripts.Entities
             SmartBots.Add(smartBot);
         }
 
-        private void RequestBotState(SmartBot bot)
+        private void RequestBotState(SmartBot smartBot, LogEventType logEvent)
         {
-            TeamType EnemyTeam = bot.Team == TeamType.RedTeam
+            TeamType EnemyTeam = smartBot.Team == TeamType.RedTeam
                 ? TeamType.BlueTeam
                 : TeamType.RedTeam;
 
-            var currentState = new BotStates.BotState()
+            var currentState = new GameState.BotState()
             {
                 LogGroup = NumberOfLogs,
-                BotsTeam = bot.Team,
-                BotsTeamsScore = GameLogic.TeamPoints.GetValueOrDefault(bot.Team),
+                BotsTeam = smartBot.Team,
+                LogEvent = logEvent,
+                BotsTeamsScore = GameLogic.TeamPoints.GetValueOrDefault(smartBot.Team),
                 EnemyTeamScore = GameLogic.TeamPoints.GetValueOrDefault(EnemyTeam),
             };
 
-            PostLogicList.ForEach(post => currentState.DistanceToPosts.Add(post.name, post.transform.GetDistanceTo(bot.gameObject.transform)));
-            States.AddState(currentState);
+            var allFriendlyBots = SmartBots
+                .Where(bot => bot.Team == smartBot.Team)
+                .ToList();
+
+            foreach (var post in PostLogicList)
+            {
+                var postState = new GameState.CommandPostState()
+                {
+                    PostNumber = int.Parse(Regex.Match(post.name, @"(\d+)").Value),
+                    ControllingTeam = post.ControllingTeam,
+                    DistanceToBot = post.transform.GetDistanceTo(smartBot.transform),
+                    AverageDistanceFromBotsTeam = allFriendlyBots
+                        .Select(bot => post.transform.GetDistanceTo(bot.transform))
+                        .Average()
+                };
+
+                currentState.CommandPostRelativeState.Add(postState);
+            }
+
+            StateOfGame.BotStates.Add(currentState);
         }
     }
 
     [Serializable]
-    public class BotStates
+    public class GameState
     {
-        public List<BotState> States = new List<BotState>();
-
-        public void AddState(BotState state)
-        {
-            States.Add(state);
-        }
+        public List<BotState> BotStates = new List<BotState>();
 
         [Serializable]
         public class BotState
         {
             public int LogGroup;
             public TeamType BotsTeam;
-            public Dictionary<string, float> DistanceToPosts = new Dictionary<string, float>();
+            public LogEventType LogEvent;
             public int BotsTeamsScore;
             public int EnemyTeamScore;
+            public List<CommandPostState> CommandPostRelativeState = new List<CommandPostState>();
+        }
+
+        [Serializable]
+        public class CommandPostState
+        {
+            public int PostNumber;
+            public TeamType ControllingTeam;
+            public float DistanceToBot;
+            public float AverageDistanceFromBotsTeam;
         }
     }
-
-
 }
