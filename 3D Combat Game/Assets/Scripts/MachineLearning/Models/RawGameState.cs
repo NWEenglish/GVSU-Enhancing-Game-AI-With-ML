@@ -5,7 +5,7 @@ using Assets.Scripts.Enums;
 namespace Assets.Scripts.MachineLearning.Models
 {
     [Serializable]
-    public class RawGameState
+    public class RawGameState : BaseGameState
     {
         public List<BotState> BotStates = new List<BotState>();
 

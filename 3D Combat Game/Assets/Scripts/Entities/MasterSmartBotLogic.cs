@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Assets.Scripts.Enums;
@@ -22,8 +20,8 @@ namespace Assets.Scripts.Entities
 
         private int NumberOfLogs = 0;
         private float LastLogTime = 0f;
-        private float TimeBetweenLogs = 20f;
         private bool HasSavedRecords = false;
+        private const float TimeBetweenLogs = 20f;
 
         private RawGameState StateOfGame = new RawGameState();
 
@@ -46,40 +44,34 @@ namespace Assets.Scripts.Entities
                 {
                     UpdateState(LogEventType.TimerTriggered);
                 }
-                else if (HasPostControlChanged())
-                {
-                    UpdateState(LogEventType.CommandPostChange);
-                }
+                //else if (HasPostControlChanged())
+                //{
+                //    UpdateState(LogEventType.CommandPostChange);
+                //}
 
                 if (GameLogic.IsGameOver)
                 {
                     // Save records
-                    string json = JsonUtility.ToJson(StateOfGame);
-
-                    var writer = File.CreateText($"{MLConstants.RawDataFilePath}\\{DateTime.Now.ToFileTime()}.txt");
-                    writer.Write(json);
-                    writer.Close();
-
-                    HasSavedRecords = true;
+                    HasSavedRecords = StateOfGame.ToSaveFile(MLConstants.RawDataFilePath);
                 }
             }
         }
 
-        private bool HasPostControlChanged()
-        {
-            bool retHasChanged = false;
+        //private bool HasPostControlChanged()
+        //{
+        //    bool retHasChanged = false;
 
-            // First pass will be empty
-            if (LastKnownControl.Any())
-            {
-                retHasChanged = PostLogicList.Any(post => LastKnownControl[post] != post.ControllingTeam);
-            }
+        //    // First pass will be empty
+        //    if (LastKnownControl.Any())
+        //    {
+        //        retHasChanged = PostLogicList.Any(post => LastKnownControl[post] != post.ControllingTeam);
+        //    }
 
-            LastKnownControl.Clear();
-            PostLogicList.ForEach(post => LastKnownControl.Add(post, post.ControllingTeam));
+        //    LastKnownControl.Clear();
+        //    PostLogicList.ForEach(post => LastKnownControl.Add(post, post.ControllingTeam));
 
-            return retHasChanged;
-        }
+        //    return retHasChanged;
+        //}
 
         private void UpdateState(LogEventType logEvent)
         {
@@ -95,6 +87,12 @@ namespace Assets.Scripts.Entities
         public void SubscribeTo(SmartBot smartBot)
         {
             SmartBots.Add(smartBot);
+        }
+
+        public void NotifyOfCapture(SmartBot smartBot)
+        {
+            NumberOfLogs++;
+            SmartBots.ForEach(bot => RequestBotState(bot, bot == smartBot ? LogEventType.CommandPostChange : LogEventType.TimerTriggered));
         }
 
         private void RequestBotState(SmartBot smartBot, LogEventType logEvent)

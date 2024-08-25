@@ -57,7 +57,7 @@ namespace Assets.Scripts.Entities
 
                 // If within bounds, wait for transition
                 // Tryz @ https://discussions.unity.com/t/how-can-i-tell-when-a-navmeshagent-has-reached-its-destination/52403
-                if (Agent.remainingDistance <= Agent.stoppingDistance)
+                if (IsInTargetArea())
                 {
                     // If target is now controlled, set a new target
                     if (targetPost.ControllingTeam == this.Team)

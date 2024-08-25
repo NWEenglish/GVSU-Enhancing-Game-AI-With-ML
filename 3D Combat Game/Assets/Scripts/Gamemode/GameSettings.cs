@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
+using Assets.Scripts.MachineLearning;
 using UnityEngine;
 
 namespace Assets.Scripts.Gamemode
@@ -9,6 +10,8 @@ namespace Assets.Scripts.Gamemode
     {
         public TeamType? PlayersTeam { get; private set; }
         public Dictionary<TeamType, BotAILevel> TeamAILevels { get; private set; } = new Dictionary<TeamType, BotAILevel>();
+
+        private DataNormalization DataNormalization = new DataNormalization();
 
         public void Configure(string redTeamAILevel, string blueTeamAILevel, string playersTeam)
         {
@@ -23,6 +26,11 @@ namespace Assets.Scripts.Gamemode
             };
 
             PlayersTeam = TeamTypeHelper.GetTeamType(playersTeam);
+        }
+
+        public void StartDataNormalization()
+        {
+            DataNormalization.StartProcess();
         }
     }
 }

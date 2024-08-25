@@ -18,14 +18,15 @@ namespace Assets.Scripts.Gamemode.Conquest
         private const int PointsPerTick = 1;
         private const int MaxPointsPerTeam = 500;
         private const float TickLengthSec = 2.5f;
+        private const float GameOverProcessLength = 20f;
 
         private float LastTimePointsDistributed;
         private GameObject GameOverPanel;
-
         private float? GameOverProcessStart;
-        private const float GameOverProcessLength = 20f;
-        private bool IsRunningGameOverProcess => GameOverProcessStart != null;
+        private GameSettings GameSettings;
+        private bool HasSavedData = false;
 
+        private bool IsRunningGameOverProcess => GameOverProcessStart != null;
         public bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
 
         private void Start()
@@ -40,6 +41,8 @@ namespace Assets.Scripts.Gamemode.Conquest
 
             GameOverPanel = GameObject.Find(HUD.GameOverScreen);
             GameOverPanel.SetActive(false);
+
+            GameSettings = GameObject.Find(Objects.GameSettings).GetComponent<GameSettings>();
         }
 
         private void FixedUpdate()
@@ -97,7 +100,15 @@ namespace Assets.Scripts.Gamemode.Conquest
 
             if (shouldEndGame)
             {
-                SceneManager.LoadScene(Scenes.MainMenu);
+                if (!HasSavedData)
+                {
+                    GameSettings.StartDataNormalization();
+                    HasSavedData = true;
+                }
+                else
+                {
+                    SceneManager.LoadScene(Scenes.MainMenu);
+                }
             }
         }
 

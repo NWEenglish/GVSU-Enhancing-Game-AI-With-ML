@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Assets.Scripts.MachineLearning.Models
 {
     [Serializable]
-    public class NormalizedGameState
+    public class NormalizedGameState : BaseGameState
     {
         public List<BotState> BotStates = new List<BotState>();
 

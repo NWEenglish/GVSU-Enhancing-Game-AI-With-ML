@@ -46,10 +46,10 @@ namespace Assets.Scripts.MachineLearning
                 RawGameState rawGameState = JsonUtility.FromJson<RawGameState>(rawFileData);
 
                 // Normalize each entry
-                var normalizedData = Normalize(rawGameState);
+                NormalizedGameState normalizedData = Normalize(rawGameState);
 
                 // Save to new file
-
+                wasSuccessful = normalizedData.ToSaveFile(MLConstants.NormalizedDataFilePath);
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ namespace Assets.Scripts.MachineLearning
             var retNormalizedBotState = new NormalizedGameState.BotState()
             {
                 LogGroup = rawBotState.LogGroup,
-                //EventType = 0f,
+                EventType = NormalizeEvent(rawBotState.LogEvent),
                 BotsTeamsScore = NormalizeScore(maxScore, rawBotState.BotsTeamsScore),
                 EnemyTeamScore = NormalizeScore(maxScore, rawBotState.EnemyTeamScore),
                 TargetPost = rawBotState.TargetPost,
@@ -99,22 +99,17 @@ namespace Assets.Scripts.MachineLearning
             return retNormalizedPostState;
         }
 
-        //private float NormalizeEvent(LogEventType eventType, TeamType botTeam, TeamType currPostTeam)
-        //{
-        //    float retNormVal = 0f;
+        private float NormalizeEvent(LogEventType logEvent)
+        {
+            float retNormVal = 0f;
 
-        //    if (eventType == LogEventType.TimerTriggered)
-        //    {
-        //        retNormVal = 0.5f;
-        //    }
-        //    else
-        //    {
-        //        // Post changed sides... need to figure out if this is good/bad
+            if (logEvent == LogEventType.CommandPostChange)
+            {
+                retNormVal = 1f;
+            }
 
-        //    }
-
-        //    return retNormVal;
-        //}
+            return retNormVal;
+        }
 
         private float NormalizeScore(float maxScore, float score)
         {

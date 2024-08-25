@@ -42,5 +42,10 @@ namespace Assets.Scripts.Entities
             Agent.SetDestination(Target.position);
             Agent.stoppingDistance = Random.Range(5, targetPost.Radius - 5);
         }
+
+        protected bool IsInTargetArea()
+        {
+            return Agent.remainingDistance <= Agent.stoppingDistance;
+        }
     }
 }
