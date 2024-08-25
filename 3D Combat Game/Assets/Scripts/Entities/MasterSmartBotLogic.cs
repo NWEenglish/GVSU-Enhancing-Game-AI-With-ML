@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Assets.Scripts.Gamemode.Conquest;
+using Assets.Scripts.MachineLearning;
+using Assets.Scripts.MachineLearning.Models;
 using UnityEngine;
 
 namespace Assets.Scripts.Entities
@@ -23,9 +25,7 @@ namespace Assets.Scripts.Entities
         private float TimeBetweenLogs = 20f;
         private bool HasSavedRecords = false;
 
-        private GameState StateOfGame = new GameState();
-
-        private string OutputDirectory = @"D:\Code\GVSU-Enhancing-Game-AI-With-ML\Data Processing\Raw Data";
+        private RawGameState StateOfGame = new RawGameState();
 
         private void Start()
         {
@@ -56,7 +56,7 @@ namespace Assets.Scripts.Entities
                     // Save records
                     string json = JsonUtility.ToJson(StateOfGame);
 
-                    var writer = File.CreateText($"{OutputDirectory}\\{DateTime.Now.ToFileTime()}.txt");
+                    var writer = File.CreateText($"{MLConstants.RawDataFilePath}\\{DateTime.Now.ToFileTime()}.txt");
                     writer.Write(json);
                     writer.Close();
 
@@ -103,13 +103,14 @@ namespace Assets.Scripts.Entities
                 ? TeamType.BlueTeam
                 : TeamType.RedTeam;
 
-            var currentState = new GameState.BotState()
+            var currentState = new RawGameState.BotState()
             {
                 LogGroup = NumberOfLogs,
                 BotsTeam = smartBot.Team,
                 LogEvent = logEvent,
                 BotsTeamsScore = GameLogic.TeamPoints.GetValueOrDefault(smartBot.Team),
                 EnemyTeamScore = GameLogic.TeamPoints.GetValueOrDefault(EnemyTeam),
+                TargetPost = GetPostNumber(smartBot?.Target?.name)
             };
 
             var allFriendlyBots = SmartBots
@@ -118,9 +119,9 @@ namespace Assets.Scripts.Entities
 
             foreach (var post in PostLogicList)
             {
-                var postState = new GameState.CommandPostState()
+                var postState = new RawGameState.CommandPostState()
                 {
-                    PostNumber = int.Parse(Regex.Match(post.name, @"(\d+)").Value),
+                    PostNumber = GetPostNumber(post?.name),
                     ControllingTeam = post.ControllingTeam,
                     DistanceToBot = post.transform.GetDistanceTo(smartBot.transform),
                     AverageDistanceFromBotsTeam = allFriendlyBots
@@ -133,31 +134,17 @@ namespace Assets.Scripts.Entities
 
             StateOfGame.BotStates.Add(currentState);
         }
-    }
 
-    [Serializable]
-    public class GameState
-    {
-        public List<BotState> BotStates = new List<BotState>();
-
-        [Serializable]
-        public class BotState
+        private int GetPostNumber(string postName)
         {
-            public int LogGroup;
-            public TeamType BotsTeam;
-            public LogEventType LogEvent;
-            public int BotsTeamsScore;
-            public int EnemyTeamScore;
-            public List<CommandPostState> CommandPostRelativeState = new List<CommandPostState>();
-        }
+            int postNumber = 0;
 
-        [Serializable]
-        public class CommandPostState
-        {
-            public int PostNumber;
-            public TeamType ControllingTeam;
-            public float DistanceToBot;
-            public float AverageDistanceFromBotsTeam;
+            if (!string.IsNullOrEmpty(postName))
+            {
+                postNumber = int.Parse(Regex.Match(postName, @"(\d+)").Value);
+            }
+
+            return postNumber;
         }
     }
 }

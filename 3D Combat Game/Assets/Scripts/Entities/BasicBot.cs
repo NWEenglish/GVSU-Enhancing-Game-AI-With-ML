@@ -15,8 +15,6 @@ namespace Assets.Scripts.Entities
 
         private float? TimeAtTargetSec = null;
 
-        private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
-
         private const float TimeToConsiderStalemate = 60f;
 
         public void InitValues(TeamType team)
@@ -27,11 +25,7 @@ namespace Assets.Scripts.Entities
 
         private void Update()
         {
-            // Due to timing issues, we might not have this list populated on startup
-            if (!PostLogicList.Any())
-            {
-                PostLogicList = ConquestGameLogic.CommandPosts;
-            }
+            BaseUpdate();
         }
 
         private void FixedUpdate()
@@ -102,9 +96,7 @@ namespace Assets.Scripts.Entities
             }
 
             TimeAtTargetSec = null;
-            var targetPost = Target.GetComponent<CommandPostLogic>();
-            Agent.SetDestination(Target.position);
-            Agent.stoppingDistance = Random.Range(5, targetPost.Radius - 5);
+            UpdateTargetDestination();
         }
 
         private Transform GetRandomEnemyCommandPost(CommandPostLogic postToSkip = null)
