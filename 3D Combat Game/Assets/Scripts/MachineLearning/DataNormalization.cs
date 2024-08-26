@@ -10,6 +10,8 @@ namespace Assets.Scripts.MachineLearning
 {
     public class DataNormalization
     {
+        private const int DecimalPlaces = 1;
+
         public void StartProcess()
         {
             // Check for new files for processing
@@ -43,10 +45,11 @@ namespace Assets.Scripts.MachineLearning
             {
                 // Read in data
                 string rawFileData = File.ReadAllText(filePath);
-                RawGameState rawGameState = JsonUtility.FromJson<RawGameState>(rawFileData);
+                //RawGameState rawGameState = JsonUtility.FromJson<RawGameState>(rawFileData);
+                RawGameState_Master rawGameState = JsonUtility.FromJson<RawGameState_Master>(rawFileData);
 
                 // Normalize each entry
-                NormalizedGameState normalizedData = Normalize(rawGameState);
+                NormalizedGameState_Master normalizedData = Normalize(rawGameState);
 
                 // Save to new file
                 wasSuccessful = normalizedData.ToSaveFile(MLConstants.NormalizedDataFilePath);
@@ -57,6 +60,23 @@ namespace Assets.Scripts.MachineLearning
             }
 
             return wasSuccessful;
+        }
+
+        private NormalizedGameState_Master Normalize(RawGameState_Master rawGameState)
+        {
+            decimal maxScore = rawGameState.States.Max(state => state.BotsTeamsScore);
+
+            NormalizedGameState_Master retNormalizedGameState = new NormalizedGameState_Master();
+
+            retNormalizedGameState.States = rawGameState.States.Select(state => new NormalizedGameState_Master.GameState()
+            {
+                State = state.State,
+                Reward = state.Reward,
+                BotsTeamsScore = NormalizeScore(maxScore, state.BotsTeamsScore).ToString(),
+                EnemyTeamScore = NormalizeScore(maxScore, state.EnemyTeamScore).ToString(),
+            }).ToList();
+
+            return retNormalizedGameState;
         }
 
         private NormalizedGameState Normalize(RawGameState rawGameState)
@@ -71,7 +91,7 @@ namespace Assets.Scripts.MachineLearning
 
         private NormalizedGameState.BotState Normalize(RawGameState rawGameState, RawGameState.BotState rawBotState)
         {
-            float maxScore = GetMaxScore(rawGameState);
+            decimal maxScore = GetMaxScore(rawGameState);
 
             var retNormalizedBotState = new NormalizedGameState.BotState()
             {
@@ -80,6 +100,7 @@ namespace Assets.Scripts.MachineLearning
                 BotsTeamsScore = NormalizeScore(maxScore, rawBotState.BotsTeamsScore),
                 EnemyTeamScore = NormalizeScore(maxScore, rawBotState.EnemyTeamScore),
                 TargetPost = rawBotState.TargetPost,
+                Reward = rawBotState.Reward,
                 CommandPostRelativeState = rawBotState.CommandPostRelativeState.Select(state => Normalize(rawBotState.BotsTeam, state)).ToList()
             };
 
@@ -99,58 +120,57 @@ namespace Assets.Scripts.MachineLearning
             return retNormalizedPostState;
         }
 
-        private float NormalizeEvent(LogEventType logEvent)
+        private decimal NormalizeEvent(LogEventType logEvent)
         {
-            float retNormVal = 0f;
-
-            if (logEvent == LogEventType.CommandPostChange)
+            return logEvent switch
             {
-                retNormVal = 1f;
-            }
-
-            return retNormVal;
+                LogEventType.GameOver => 1.0m,
+                LogEventType.CommandPostChange => 0.5m,
+                _ => 0m
+            };
         }
 
-        private float NormalizeScore(float maxScore, float score)
+        private decimal NormalizeScore(decimal maxScore, int score)
         {
             // Using min-max normalization
-            float minScore = 0f;
-            float retNormVal = (score - minScore) / (maxScore - minScore);
+            decimal minScore = 0m;
+            decimal normalizedValue = (score - minScore) / (maxScore - minScore);
+            decimal retNormVal = Math.Round(normalizedValue, DecimalPlaces, MidpointRounding.AwayFromZero);
 
             return retNormVal;
         }
 
-        private float GetMaxScore(RawGameState gameState)
+        private decimal GetMaxScore(RawGameState gameState)
         {
             int maxEnemyScore = gameState.BotStates.Select(state => state.EnemyTeamScore).Max();
             int maxTeamScore = gameState.BotStates.Select(state => state.BotsTeamsScore).Max();
 
-            float retMaxVal = maxEnemyScore > maxTeamScore
+            decimal retMaxVal = maxEnemyScore > maxTeamScore
                 ? maxEnemyScore
                 : maxTeamScore;
 
             return retMaxVal;
         }
 
-        private float NormalizeTeam(TeamType botTeam, TeamType postTeam)
+        private decimal NormalizeTeam(TeamType botTeam, TeamType postTeam)
         {
-            float retNormVal = 0f;
+            decimal retNormVal = 0m;
 
             if (postTeam == TeamType.Neutral)
             {
-                retNormVal = 0.5f;
+                retNormVal = 0.5m;
             }
             else if (botTeam == postTeam)
             {
-                retNormVal = 1.0f;
+                retNormVal = 1.0m;
             }
 
             return retNormVal;
         }
 
-        private float NormalizeDistance(float distance)
+        private decimal NormalizeDistance(float distance)
         {
-            float retNormVal;
+            decimal retNormVal;
 
             // Attacking/Defending
             if (distance <= 15)
@@ -167,7 +187,9 @@ namespace Assets.Scripts.MachineLearning
             {
                 int max = 400;
                 int min = 15;
-                retNormVal = (distance - min) / (max - min);
+                double normalizedValue = (distance - min) / (max - min);
+
+                retNormVal = (decimal)Math.Round(normalizedValue, DecimalPlaces, MidpointRounding.AwayFromZero);
             }
 
             return retNormVal;

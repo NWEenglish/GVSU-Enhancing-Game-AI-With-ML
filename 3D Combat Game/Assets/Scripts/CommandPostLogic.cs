@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using UnityEngine;
@@ -183,6 +184,18 @@ namespace Assets.Scripts
                 .Value;
 
             return largestTeamCount >= ((AttackingTeams.Count() / 2) + 1);
+        }
+
+        public int GetPostNumber()
+        {
+            int postNumber = 0;
+
+            if (!string.IsNullOrEmpty(this.name))
+            {
+                postNumber = int.Parse(Regex.Match(this.name, @"(\d+)").Value);
+            }
+
+            return postNumber;
         }
     }
 }

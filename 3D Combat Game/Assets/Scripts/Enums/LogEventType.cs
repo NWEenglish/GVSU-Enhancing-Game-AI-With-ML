@@ -3,6 +3,7 @@
     public enum LogEventType
     {
         TimerTriggered,
-        CommandPostChange
+        CommandPostChange,
+        GameOver
     }
 }

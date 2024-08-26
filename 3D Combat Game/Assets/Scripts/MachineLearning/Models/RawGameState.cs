@@ -18,6 +18,7 @@ namespace Assets.Scripts.MachineLearning.Models
             public int BotsTeamsScore;
             public int EnemyTeamScore;
             public int TargetPost;
+            public int Reward;
             public List<CommandPostState> CommandPostRelativeState = new List<CommandPostState>();
         }
 
@@ -28,6 +29,21 @@ namespace Assets.Scripts.MachineLearning.Models
             public TeamType ControllingTeam;
             public float DistanceToBot;
             public float AverageDistanceFromBotsTeam;
+        }
+    }
+
+    [Serializable]
+    public class RawGameState_Master : BaseGameState
+    {
+        public List<GameState> States = new List<GameState>();
+
+        [Serializable]
+        public class GameState
+        {
+            public string State; // EENCC => E = Enemy, N = Neutral, C = Controlled
+            public int Reward;
+            public int BotsTeamsScore;
+            public int EnemyTeamScore;
         }
     }
 }

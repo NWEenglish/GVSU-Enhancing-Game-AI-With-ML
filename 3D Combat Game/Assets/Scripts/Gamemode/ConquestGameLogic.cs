@@ -64,6 +64,23 @@ namespace Assets.Scripts.Gamemode.Conquest
             }
         }
 
+        public TeamType? GetWinningTeam()
+        {
+            TeamType? winningTeam = null;
+
+            List<TeamType> winningTeams = TeamPoints
+                .Where(kvp => kvp.Value >= MaxPointsPerTeam)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            if (winningTeams.Count == 1)
+            {
+                winningTeam = winningTeams.First();
+            }
+
+            return winningTeam;
+        }
+
         private void StartGameOverProcess()
         {
             GameOverProcessStart = Time.time;

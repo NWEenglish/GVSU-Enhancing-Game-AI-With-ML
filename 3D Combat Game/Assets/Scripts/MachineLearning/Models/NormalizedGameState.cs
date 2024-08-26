@@ -12,11 +12,12 @@ namespace Assets.Scripts.MachineLearning.Models
         public class BotState
         {
             public int LogGroup;
-            public float ControllingTeam;
-            public float EventType;
-            public float BotsTeamsScore;
-            public float EnemyTeamScore;
+            public decimal ControllingTeam;
+            public decimal EventType;
+            public decimal BotsTeamsScore;
+            public decimal EnemyTeamScore;
             public int TargetPost;
+            public int Reward;
             public List<CommandPostState> CommandPostRelativeState = new List<CommandPostState>();
         }
 
@@ -24,9 +25,24 @@ namespace Assets.Scripts.MachineLearning.Models
         public class CommandPostState
         {
             public int PostNumber;
-            public float ControllingTeam;
-            public float DistanceToBot;
-            public float AverageDistanceFromBotsTeam;
+            public decimal ControllingTeam;
+            public decimal DistanceToBot;
+            public decimal AverageDistanceFromBotsTeam;
+        }
+    }
+
+    [Serializable]
+    public class NormalizedGameState_Master : BaseGameState
+    {
+        public List<GameState> States = new List<GameState>();
+
+        [Serializable]
+        public class GameState
+        {
+            public string State; // EENCC => E = Enemy, N = Neutral, C = Controlled
+            public int Reward;
+            public string BotsTeamsScore;
+            public string EnemyTeamScore;
         }
     }
 }
