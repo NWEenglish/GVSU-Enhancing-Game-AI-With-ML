@@ -15,8 +15,9 @@ namespace Assets.Scripts.Gamemode.Conquest
         public Dictionary<TeamType, int> TeamPoints { get; private set; } = new Dictionary<TeamType, int>();
         public List<CommandPostLogic> CommandPosts { get; private set; } = new List<CommandPostLogic>();
 
+        public int MaxPointsPerTeam => 500;
+
         private const int PointsPerTick = 1;
-        private const int MaxPointsPerTeam = 500;
         private const float TickLengthSec = 2.5f;
         private const float GameOverProcessLength = 20f;
 

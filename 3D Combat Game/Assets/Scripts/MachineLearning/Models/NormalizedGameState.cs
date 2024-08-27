@@ -39,10 +39,8 @@ namespace Assets.Scripts.MachineLearning.Models
         [Serializable]
         public class GameState
         {
-            public string State; // EENCC => E = Enemy, N = Neutral, C = Controlled
+            public string State;
             public int Reward;
-            public string BotsTeamsScore;
-            public string EnemyTeamScore;
         }
     }
 }

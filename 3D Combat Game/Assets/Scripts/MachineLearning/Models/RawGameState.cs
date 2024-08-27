@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Assets.Scripts.Enums;
 
@@ -40,10 +40,14 @@ namespace Assets.Scripts.MachineLearning.Models
         [Serializable]
         public class GameState
         {
-            public string State; // EENCC => E = Enemy, N = Neutral, C = Controlled
+            public string State;
             public int Reward;
-            public int BotsTeamsScore;
-            public int EnemyTeamScore;
+
+            public GameState(string stete)
+            {
+                State = stete;
+                Reward = 0;
+            }
         }
     }
 }

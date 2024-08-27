@@ -3,6 +3,7 @@ using System.Linq;
 using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Gamemode.Conquest;
+using Assets.Scripts.MachineLearning.Helpers;
 using Assets.Scripts.MachineLearning.Models;
 using UnityEngine;
 
@@ -49,6 +50,7 @@ namespace Assets.Scripts.MachineLearning
             }
             else if (GameLogic.IsGameOver)
             {
+                GameState.States.Add(new RawGameState_Master.GameState(currentState));
                 GameState.ToSaveFile(MLConstants.RawDataFilePath);
                 HaveSaved = true;
             }
@@ -56,40 +58,26 @@ namespace Assets.Scripts.MachineLearning
             {
                 LastGameState = currentState;
                 LastStateSave = Time.time;
-                GameState.States.Add(new RawGameState_Master.GameState()
-                {
-                    State = currentState,
-                    BotsTeamsScore = GameLogic.TeamPoints[Team],
-                    EnemyTeamScore = GameLogic.TeamPoints[GetEnemyTeam()],
-                });
+                GameState.States.Add(new RawGameState_Master.GameState(currentState));
             }
         }
 
         private string GetGameStateID()
         {
-            char[] stateValue = new char[5];
+
+            int maxPoints = GameLogic.MaxPointsPerTeam;
+            int redTeamPoints = GameLogic.TeamPoints[TeamType.RedTeam];
+            int blueTeamPoints = GameLogic.TeamPoints[TeamType.BlueTeam];
+
+            Dictionary<int, TeamType> postTeams = new Dictionary<int, TeamType>();
             foreach (var post in PostLogicList)
             {
                 int postNumber = post.GetPostNumber();
-                char postControllValue;
-
-                if (post.ControllingTeam == TeamType.Neutral)
-                {
-                    postControllValue = 'N';
-                }
-                else if (post.ControllingTeam != Team)
-                {
-                    postControllValue = 'E';
-                }
-                else
-                {
-                    postControllValue = 'C';
-                }
-
-                stateValue[postNumber - 1] = postControllValue;
+                postTeams.Add(postNumber, post.ControllingTeam);
             }
 
-            return new string(stateValue);
+            var retGameStateID = GameStateHelper.GetGameState(maxPoints, redTeamPoints, blueTeamPoints, postTeams);
+            return retGameStateID;
         }
 
         private TeamType GetEnemyTeam()
