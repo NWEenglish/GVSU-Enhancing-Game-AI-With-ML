@@ -14,7 +14,7 @@ namespace Assets.Scripts.MachineLearning
         private ConquestGameLogic GameLogic;
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
         private List<SmartBot> SmartBots = new List<SmartBot>();
-        private RawGameState GameState = new RawGameState();
+        private RawGameState GameState;
         private bool HaveSaved = false;
         private string LastGameState = string.Empty;
         private float LastStateSave = 0f;
@@ -28,6 +28,10 @@ namespace Assets.Scripts.MachineLearning
         private void Start()
         {
             GameLogic = GameObject.FindObjectOfType<ConquestGameLogic>();
+            GameState = new RawGameState()
+            {
+                Team = Team
+            };
         }
 
         private void Update()
@@ -50,7 +54,7 @@ namespace Assets.Scripts.MachineLearning
             }
             else if (GameLogic.IsGameOver)
             {
-                GameState.States.Add(new RawGameState.GameState(currentState));
+                GameState.States.Add(GetGameState());
                 GameState.ToSaveFile(MLConstants.RawDataFilePath);
                 HaveSaved = true;
             }
@@ -58,8 +62,20 @@ namespace Assets.Scripts.MachineLearning
             {
                 LastGameState = currentState;
                 LastStateSave = Time.time;
-                GameState.States.Add(new RawGameState.GameState(currentState));
+                GameState.States.Add(GetGameState());
             }
+        }
+
+        private RawGameState.GameState GetGameState()
+        {
+            Dictionary<int, TeamType> postTeams = new Dictionary<int, TeamType>();
+            foreach (var post in PostLogicList)
+            {
+                int postNumber = post.GetPostNumber();
+                postTeams.Add(postNumber, post.ControllingTeam);
+            }
+
+            return new RawGameState.GameState(GameLogic.MaxPointsPerTeam, GameLogic.TeamPoints[TeamType.RedTeam], GameLogic.TeamPoints[TeamType.BlueTeam], postTeams);
         }
 
         private string GetGameStateID()
@@ -78,13 +94,6 @@ namespace Assets.Scripts.MachineLearning
 
             var retGameStateID = GameStateHelper.GetGameState(maxPoints, redTeamPoints, blueTeamPoints, postTeams);
             return retGameStateID;
-        }
-
-        private TeamType GetEnemyTeam()
-        {
-            return Team == TeamType.RedTeam
-                ? TeamType.BlueTeam
-                : TeamType.RedTeam;
         }
 
         public void SubscribeTo(SmartBot smartBot)

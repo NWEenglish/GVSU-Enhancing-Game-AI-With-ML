@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Assets.Scripts.Enums;
+using Assets.Scripts.MachineLearning.Helpers;
 using Assets.Scripts.MachineLearning.Models;
 using UnityEngine;
 
@@ -62,12 +64,22 @@ namespace Assets.Scripts.MachineLearning
 
         private NormalizedGameState Normalize(RawGameState rawGameState)
         {
-            NormalizedGameState retNormalizedGameState = new NormalizedGameState();
+            NormalizedGameState retNormalizedGameState = new NormalizedGameState()
+            {
+                Team = rawGameState.Team
+            };
 
             retNormalizedGameState.States = rawGameState.States.Select(state => new NormalizedGameState.GameState()
             {
-                State = state.State,
-                Reward = state.Reward
+                State = GameStateHelper.GetGameState(state.MaxScore, state.RedTeamScore, state.BlueTeamScore, new Dictionary<int, TeamType>()
+                {
+                    { 1, state.Post1 },
+                    { 2, state.Post2 },
+                    { 3, state.Post3 },
+                    { 4, state.Post4 },
+                    { 5, state.Post5 },
+                }),
+                Reward = 0
             }).ToList();
 
             return retNormalizedGameState;

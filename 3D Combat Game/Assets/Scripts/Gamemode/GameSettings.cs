@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Assets.Scripts.MachineLearning;
@@ -12,6 +13,7 @@ namespace Assets.Scripts.Gamemode
         public Dictionary<TeamType, BotAILevel> TeamAILevels { get; private set; } = new Dictionary<TeamType, BotAILevel>();
 
         private DataNormalization DataNormalization = new DataNormalization();
+        private Algorithms MLAlgorithms = new Algorithms();
 
         public void Configure(string redTeamAILevel, string blueTeamAILevel, string playersTeam)
         {
@@ -31,6 +33,10 @@ namespace Assets.Scripts.Gamemode
         public void StartDataNormalization()
         {
             DataNormalization.StartProcess();
+            TeamAILevels
+                .Where(kvp => kvp.Value == BotAILevel.SmartAI)
+                .ToList()
+                .ForEach(kvp => MLAlgorithms.StartProcess(kvp.Key));
         }
     }
 }
