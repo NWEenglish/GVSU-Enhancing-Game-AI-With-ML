@@ -14,7 +14,7 @@ namespace Assets.Scripts.MachineLearning
         private ConquestGameLogic GameLogic;
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
         private List<SmartBot> SmartBots = new List<SmartBot>();
-        private RawGameState_Master GameState = new RawGameState_Master();
+        private RawGameState GameState = new RawGameState();
         private bool HaveSaved = false;
         private string LastGameState = string.Empty;
         private float LastStateSave = 0f;
@@ -50,7 +50,7 @@ namespace Assets.Scripts.MachineLearning
             }
             else if (GameLogic.IsGameOver)
             {
-                GameState.States.Add(new RawGameState_Master.GameState(currentState));
+                GameState.States.Add(new RawGameState.GameState(currentState));
                 GameState.ToSaveFile(MLConstants.RawDataFilePath);
                 HaveSaved = true;
             }
@@ -58,7 +58,7 @@ namespace Assets.Scripts.MachineLearning
             {
                 LastGameState = currentState;
                 LastStateSave = Time.time;
-                GameState.States.Add(new RawGameState_Master.GameState(currentState));
+                GameState.States.Add(new RawGameState.GameState(currentState));
             }
         }
 

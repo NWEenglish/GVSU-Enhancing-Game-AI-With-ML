@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Assets.Scripts.Enums;
+using Assets.Scripts.MachineLearning;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -7,11 +8,11 @@ namespace Assets.Scripts.Entities
 {
     public class SmartBot : BaseBot
     {
-        private MasterSmartBotLogic MasterLogic;
-
+        private MasterMLOrchestrator MasterLogic;
         private float LastUpdate = 0f;
-
         private TeamType TargetPostTeam;
+
+        public int CurrentReward { get; private set; } = 0;
 
         public void InitValues(TeamType team)
         {
@@ -20,7 +21,7 @@ namespace Assets.Scripts.Entities
 
         private void Start()
         {
-            MasterLogic = GameObject.FindObjectOfType<MasterSmartBotLogic>();
+            MasterLogic = GameObject.FindObjectsOfType<MasterMLOrchestrator>().First(orch => orch.Team == this.Team);
             MasterLogic.SubscribeTo(this);
         }
 
@@ -55,8 +56,6 @@ namespace Assets.Scripts.Entities
                     // The gist is, we need to award for captures only when they reach a post and contribute to it being captured by their team
                     if (TargetPostTeam != targetPost.ControllingTeam && targetPost.ControllingTeam == this.Team)
                     {
-                        MasterLogic.NotifyOfCapture(this);
-
                         // Ask for target
                     }
                     else if (!targetPost.IsChanging())
@@ -67,6 +66,12 @@ namespace Assets.Scripts.Entities
             }
 
             // On a timer, asking for a new target every so often (since the game could've drastically changed)
+        }
+
+        // Essentially, this opens the door for Q-Learning
+        public void ReceiveReward(int allocatedPoints)
+        {
+            CurrentReward += allocatedPoints;
         }
 
         private Transform GetRandomTarget(CommandPostLogic postToSkip = null)
