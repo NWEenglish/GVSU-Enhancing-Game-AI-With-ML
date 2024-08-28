@@ -12,8 +12,6 @@ namespace Assets.Scripts.Entities
         private float LastUpdate = 0f;
         private TeamType TargetPostTeam;
 
-        public int CurrentReward { get; private set; } = 0;
-
         public void InitValues(TeamType team)
         {
             BaseBotStart(team);
@@ -30,54 +28,35 @@ namespace Assets.Scripts.Entities
             BaseUpdate();
         }
 
-        private void FixedUpdate()
+        public void UpdateTarget(CommandPostLogic newTargetPost = null)
         {
-            // Due to timing issues, we might not have this list populated on startup
-            if (!PostLogicList.Any())
+            if (newTargetPost == null)
             {
-                return;
-            }
-            else if (Target == null)
-            {
-                // Replace with logic
                 Target = GetRandomTarget();
-                UpdateTargetDestination();
             }
             else
             {
-                var targetPost = Target.GetComponent<CommandPostLogic>();
-
-                if (!IsInTargetArea())
-                {
-                    TargetPostTeam = targetPost.ControllingTeam;
-                }
-                else if (IsInTargetArea())
-                {
-                    // The gist is, we need to award for captures only when they reach a post and contribute to it being captured by their team
-                    if (TargetPostTeam != targetPost.ControllingTeam && targetPost.ControllingTeam == this.Team)
-                    {
-                        // Ask for target
-                    }
-                    else if (!targetPost.IsChanging())
-                    {
-                        // Ask for target
-                    }
-                }
+                Target = PostLogicList.FirstOrDefault(post => post == newTargetPost).transform;
             }
 
-            // On a timer, asking for a new target every so often (since the game could've drastically changed)
+            UpdateTargetDestination();
         }
 
-        // Essentially, this opens the door for Q-Learning
-        public void ReceiveReward(int allocatedPoints)
+        public float DistanceToTarget()
         {
-            CurrentReward += allocatedPoints;
+            float retDistance = float.MaxValue;
+
+            if (Target != null)
+            {
+                retDistance = Agent.remainingDistance;
+            }
+
+            return retDistance;
         }
 
-        private Transform GetRandomTarget(CommandPostLogic postToSkip = null)
+        private Transform GetRandomTarget()
         {
             var posts = PostLogicList
-                .Where(post => post.ControllingTeam != this.Team && post.GetComponent<CommandPostLogic>() != postToSkip)
                 .Select(post => post.gameObject.transform)
                 .ToList();
 

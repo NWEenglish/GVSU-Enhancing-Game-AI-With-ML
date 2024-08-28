@@ -36,7 +36,7 @@ namespace Assets.Scripts.Gamemode
             TeamAILevels
                 .Where(kvp => kvp.Value == BotAILevel.SmartAI)
                 .ToList()
-                .ForEach(kvp => MLAlgorithms.StartProcess(kvp.Key));
+                .ForEach(kvp => MLAlgorithms.StartSaveProcess(kvp.Key));
         }
     }
 }

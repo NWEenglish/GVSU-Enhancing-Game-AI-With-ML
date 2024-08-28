@@ -11,10 +11,40 @@ namespace Assets.Scripts.MachineLearning
     public class Algorithms
     {
         private const double LearningRate = 0.5;
-        private const double RiskFactor = 0.5;
+        private const double RiskFactor = 0.75;
         private const double DiscountFactor = 1;
 
-        public void StartProcess(TeamType teamToProcess)
+        private NormalizedGameState LoadedLearnedDate = null;
+
+        private void LoadLearnedKnowledge(TeamType team)
+        {
+            // Check for saved data that's been learned for this team
+            string mostRecentFile = Directory.GetFiles(MLConstants.LearnedDataFilePath)
+                .Where(fileName => GetTeamFromFileName(fileName) == team)
+                .OrderByDescending(fileName => GetGenFromFileName(fileName))
+                .FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(mostRecentFile))
+            {
+                LoadedLearnedDate = ReadInGameState(mostRecentFile);
+            }
+        }
+
+        public List<NormalizedGameState.GameState> GetNextStates(TeamType team, string stateID)
+        {
+            if (LoadedLearnedDate == null)
+            {
+                LoadLearnedKnowledge(team);
+            }
+
+            int currentRedScore = GetTeamScorePercentile(stateID, TeamType.RedTeam);
+            int currentBlueScore = GetTeamScorePercentile(stateID, TeamType.BlueTeam);
+
+            List<NormalizedGameState.GameState> retNextStates = GetApplicableNextStates(LoadedLearnedDate, currentRedScore, currentBlueScore);
+            return retNextStates;
+        }
+
+        public void StartSaveProcess(TeamType teamToProcess)
         {
             // Check for new normalized data; continue if any present
             List<string> normFiles = Directory.GetFiles(MLConstants.NormalizedDataFilePath).ToList();
@@ -95,6 +125,12 @@ namespace Assets.Scripts.MachineLearning
             }
         }
 
+        public bool ShouldUseRandomValue()
+        {
+            var value = Random.Range(0f, 1f);
+            return value > RiskFactor;
+        }
+
         private NormalizedGameState BackPropagate(NormalizedGameState currentKnowledge, NormalizedGameState gameState)
         {
             // Go in reverse order
@@ -151,34 +187,44 @@ namespace Assets.Scripts.MachineLearning
             int currentRedScore = GetTeamScorePercentile(currentStateID, TeamType.RedTeam);
             int currentBlueScore = GetTeamScorePercentile(currentStateID, TeamType.BlueTeam);
 
-            var applicableGameStates = new List<NormalizedGameState.GameState>();
-
-            foreach (NormalizedGameState.GameState gameState in currentKnowledge.States)
-            {
-                int thisRedScore = GetTeamScorePercentile(gameState.StateID, TeamType.RedTeam);
-                int thisBlueScore = GetTeamScorePercentile(gameState.StateID, TeamType.BlueTeam);
-
-                // We can't go backwards in score, exclude these
-                if (thisRedScore < currentRedScore || thisBlueScore < currentBlueScore)
-                {
-                    continue;
-                }
-
-                // If within 0-1 percentiles, include them
-                if (thisRedScore == currentRedScore || thisRedScore == currentRedScore + 1)
-                {
-                    if (thisBlueScore == currentBlueScore || thisBlueScore == currentBlueScore + 1)
-                    {
-                        applicableGameStates.Add(gameState);
-                    }
-                }
-            }
+            List<NormalizedGameState.GameState> applicableGameStates = GetApplicableNextStates(currentKnowledge, currentRedScore, currentBlueScore);
 
             retBestNextStateValue = applicableGameStates
                 .OrderByDescending(state => state.Value)
                 .FirstOrDefault()?.Value ?? 0;
 
             return retBestNextStateValue;
+        }
+
+        private List<NormalizedGameState.GameState> GetApplicableNextStates(NormalizedGameState currentKnowledge, int currentRedScore, int currentBlueScore)
+        {
+            var retNextStates = new List<NormalizedGameState.GameState>();
+
+            if (currentKnowledge != null)
+            {
+                foreach (NormalizedGameState.GameState gameState in currentKnowledge.States)
+                {
+                    int thisRedScore = GetTeamScorePercentile(gameState.StateID, TeamType.RedTeam);
+                    int thisBlueScore = GetTeamScorePercentile(gameState.StateID, TeamType.BlueTeam);
+
+                    // We can't go backwards in score, exclude these
+                    if (thisRedScore < currentRedScore || thisBlueScore < currentBlueScore)
+                    {
+                        continue;
+                    }
+
+                    // If within 0-1 percentiles, include them
+                    if (thisRedScore == currentRedScore || thisRedScore == currentRedScore + 1)
+                    {
+                        if (thisBlueScore == currentBlueScore || thisBlueScore == currentBlueScore + 1)
+                        {
+                            retNextStates.Add(gameState);
+                        }
+                    }
+                }
+            }
+
+            return retNextStates;
         }
 
         private int GetTeamScorePercentile(string stateID, TeamType team)

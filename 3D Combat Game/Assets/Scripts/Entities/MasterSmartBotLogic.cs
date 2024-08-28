@@ -132,7 +132,7 @@ namespace Assets.Scripts.Entities
         {
             TeamType EnemyTeam = GetEnemyTeam(smartBot.Team);
             int stateReward = DetermineStateReward(LogEventType.CommandPostChange, GameLogic.TeamPoints[smartBot.Team], GameLogic.TeamPoints[EnemyTeam]);
-            smartBot.ReceiveReward(stateReward);
+            //smartBot.ReceiveReward(stateReward);
 
             //var currentState = new RawGameState.BotState()
             //{
