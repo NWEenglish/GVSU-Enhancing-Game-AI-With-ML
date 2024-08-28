@@ -10,6 +10,10 @@ namespace Assets.Scripts.MachineLearning
 {
     public class Algorithms
     {
+        private const double LearningRate = 0.5;
+        private const double RiskFactor = 0.5;
+        private const double DiscountFactor = 1;
+
         public void StartProcess(TeamType teamToProcess)
         {
             // Check for new normalized data; continue if any present
@@ -48,6 +52,15 @@ namespace Assets.Scripts.MachineLearning
                     currentKnowledge = ReadInGameState(mostRecentFile);
                 }
 
+                // If nothing was read in, instantiate it
+                if (currentKnowledge == null)
+                {
+                    currentKnowledge = new NormalizedGameState()
+                    {
+                        Team = teamToProcess
+                    };
+                }
+
                 // Back-propagate and insert new states
                 foreach (NormalizedGameState gameState in NormGameStates)
                 {
@@ -63,7 +76,7 @@ namespace Assets.Scripts.MachineLearning
                     foreach (string normFile in normFiles)
                     {
                         string fileName = Path.GetFileName(normFile);
-                        File.Move(normFile, $"{MLConstants.RawDataArchiveFilePath}/{fileName}");
+                        File.Move(normFile, $"{MLConstants.NormalizedArchivedFilePath}/{fileName}");
                     }
 
                     if (currentGeneration % 10 == 0)
@@ -75,7 +88,7 @@ namespace Assets.Scripts.MachineLearning
                         foreach (string file in oldLearnedFiles)
                         {
                             string fileName = Path.GetFileName(file);
-                            File.Move(file, $"{MLConstants.LearnedArchiveaFilePath}/{fileName}");
+                            File.Move(file, $"{MLConstants.LearnedArchivedFilePath}/{fileName}");
                         }
                     }
                 }
@@ -87,33 +100,124 @@ namespace Assets.Scripts.MachineLearning
             // Go in reverse order
             for (int index = gameState.States.Count - 1; index >= 0; index--)
             {
+                NormalizedGameState.GameState currentState = gameState.States[index];
+                NormalizedGameState.GameState matchingKnownState = currentKnowledge.States.FirstOrDefault(state => state.StateID == currentState.StateID);
+
                 // Game over
                 if (index == gameState.States.Count - 1)
                 {
-                    TeamType? winner = GetWinner(gameState.States[index].State);
-                    int points;
+                    TeamType? gameWinner = GetWinner(currentState.StateID);
+                    currentState.Value = GameOverPoints(gameWinner, currentKnowledge.Team);
+                }
+                // Bring knowledge back by learning with Q-Learning
+                else
+                {
+                    // No rewards for entering a new state
+                    double reward = 0;
 
-                    // Won
-                    if (winner == gameState.Team)
+                    // Check if the current state has been seen before
+                    double currentValue = 0;
+                    if (matchingKnownState != null)
                     {
-                        points = 1000;
-                    }
-                    // Lost
-                    else if (winner != gameState.Team)
-                    {
-                        points = -1000;
-                    }
-                    // Tie
-                    else
-                    {
-                        points = -20;
+                        currentValue = matchingKnownState.Value;
                     }
 
-                    gameState.States[index].Reward = points;
+                    // Find the next best state
+                    double maxNextValue = BestNextStateValue(currentKnowledge, currentState.StateID);
+
+                    // Calculate this state's value
+                    double newStateValue = GetNewStateValue(currentValue, reward, maxNextValue);
+                    currentState.Value = newStateValue;
+                }
+
+                // Update or append to current knowledge
+                if (matchingKnownState == null)
+                {
+                    currentKnowledge.States.Add(currentState);
+                }
+                else
+                {
+                    matchingKnownState.Value = currentState.Value;
                 }
             }
 
             return currentKnowledge;
+        }
+
+        private double BestNextStateValue(NormalizedGameState currentKnowledge, string currentStateID)
+        {
+            double retBestNextStateValue = 0;
+
+            int currentRedScore = GetTeamScorePercentile(currentStateID, TeamType.RedTeam);
+            int currentBlueScore = GetTeamScorePercentile(currentStateID, TeamType.BlueTeam);
+
+            var applicableGameStates = new List<NormalizedGameState.GameState>();
+
+            foreach (NormalizedGameState.GameState gameState in currentKnowledge.States)
+            {
+                int thisRedScore = GetTeamScorePercentile(gameState.StateID, TeamType.RedTeam);
+                int thisBlueScore = GetTeamScorePercentile(gameState.StateID, TeamType.BlueTeam);
+
+                // We can't go backwards in score, exclude these
+                if (thisRedScore < currentRedScore || thisBlueScore < currentBlueScore)
+                {
+                    continue;
+                }
+
+                // If within 0-1 percentiles, include them
+                if (thisRedScore == currentRedScore || thisRedScore == currentRedScore + 1)
+                {
+                    if (thisBlueScore == currentBlueScore || thisBlueScore == currentBlueScore + 1)
+                    {
+                        applicableGameStates.Add(gameState);
+                    }
+                }
+            }
+
+            retBestNextStateValue = applicableGameStates
+                .OrderByDescending(state => state.Value)
+                .FirstOrDefault()?.Value ?? 0;
+
+            return retBestNextStateValue;
+        }
+
+        private int GetTeamScorePercentile(string stateID, TeamType team)
+        {
+            int index = team == TeamType.RedTeam ? 0 : 1;
+            string rawValue = stateID.ElementAt(index).ToString();
+            int retScore = rawValue == "*" ? 10 : int.Parse(rawValue);
+
+            return retScore;
+        }
+
+        private double GetNewStateValue(double currentValue, double reward, double maxNextValue)
+        {
+            // Q-Learning Algorithm
+            double retNewValue = currentValue + (LearningRate * (reward + (DiscountFactor * maxNextValue)) - currentValue);
+            return retNewValue;
+        }
+
+        private int GameOverPoints(TeamType? gameWinner, TeamType currentTeam)
+        {
+            int retPoints;
+
+            // Won
+            if (gameWinner == currentTeam)
+            {
+                retPoints = 1000;
+            }
+            // Lost
+            else if (gameWinner != currentTeam)
+            {
+                retPoints = -1000;
+            }
+            // Tie
+            else
+            {
+                retPoints = -20;
+            }
+
+            return retPoints;
         }
 
         private TeamType? GetWinner(string gameStateID)
@@ -148,19 +252,21 @@ namespace Assets.Scripts.MachineLearning
 
         private bool SaveKnowledge(NormalizedGameState currentKnowledge, int currentGeneration)
         {
-            string fileName = $"{(int)currentKnowledge.Team}-{currentGeneration}.txt";
+            string fileName = $"{(int)currentKnowledge.Team}-{currentGeneration}";
             bool wasSuccessful = currentKnowledge.ToSaveFile(MLConstants.LearnedDataFilePath, fileName);
             return wasSuccessful;
         }
 
         private int GetGenFromFileName(string fileName)
         {
-            return int.Parse(Regex.Match(fileName, @"(\d*).txt").Value);
+            string genStr = Regex.Match(fileName, @"(\d*)\.txt").Groups[1].Value;
+            return int.Parse(genStr);
         }
 
         private TeamType GetTeamFromFileName(string fileName)
         {
-            int team = int.Parse(Regex.Match(fileName, @"(\d*)-").Value);
+            string teamStr = Regex.Match(fileName, @"(\d+)-").Groups[1].Value;
+            int team = int.Parse(teamStr);
             return (TeamType)team;
         }
     }

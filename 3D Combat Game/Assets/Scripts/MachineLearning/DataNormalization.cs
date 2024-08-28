@@ -71,7 +71,7 @@ namespace Assets.Scripts.MachineLearning
 
             retNormalizedGameState.States = rawGameState.States.Select(state => new NormalizedGameState.GameState()
             {
-                State = GameStateHelper.GetGameState(state.MaxScore, state.RedTeamScore, state.BlueTeamScore, new Dictionary<int, TeamType>()
+                StateID = GameStateHelper.GetGameState(state.MaxScore, state.RedTeamScore, state.BlueTeamScore, new Dictionary<int, TeamType>()
                 {
                     { 1, state.Post1 },
                     { 2, state.Post2 },
@@ -79,7 +79,7 @@ namespace Assets.Scripts.MachineLearning
                     { 4, state.Post4 },
                     { 5, state.Post5 },
                 }),
-                Reward = 0
+                Value = 0
             }).ToList();
 
             return retNormalizedGameState;

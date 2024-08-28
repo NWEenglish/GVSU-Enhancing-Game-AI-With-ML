@@ -16,9 +16,13 @@ namespace Assets.Scripts.MachineLearning.Models
 
             try
             {
-                string json = JsonUtility.ToJson(this);
+                if (string.IsNullOrEmpty(name))
+                {
+                    name = $"{(int)this.Team}-{DateTime.Now.ToFileTime()}";
+                }
 
-                var writer = File.CreateText($"{path}\\{(int)this.Team}-{DateTime.Now.ToFileTime()}.txt");
+                string json = JsonUtility.ToJson(this);
+                var writer = File.CreateText($"{path}\\{name}.txt");
                 writer.Write(json);
                 writer.Close();
 

@@ -11,8 +11,8 @@ namespace Assets.Scripts.MachineLearning.Models
         [Serializable]
         public class GameState
         {
-            public string State;
-            public int Reward;
+            public string StateID;
+            public double Value;
         }
     }
 }
