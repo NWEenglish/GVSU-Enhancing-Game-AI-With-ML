@@ -15,18 +15,20 @@ namespace Assets.Scripts.Gamemode.Conquest
         public Dictionary<TeamType, int> TeamPoints { get; private set; } = new Dictionary<TeamType, int>();
         public List<CommandPostLogic> CommandPosts { get; private set; } = new List<CommandPostLogic>();
 
+        public int MaxPointsPerTeam => 500;
+
         private const int PointsPerTick = 1;
-        private const int MaxPointsPerTeam = 500;
         private const float TickLengthSec = 2.5f;
+        private const float GameOverProcessLength = 20f;
 
         private float LastTimePointsDistributed;
         private GameObject GameOverPanel;
-
         private float? GameOverProcessStart;
-        private const float GameOverProcessLength = 15f; // 15 secs
-        private bool IsRunningGameOverProcess => GameOverProcessStart != null;
+        private GameSettings GameSettings;
+        private bool HasSavedData = false;
 
-        private bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
+        private bool IsRunningGameOverProcess => GameOverProcessStart != null;
+        public bool IsGameOver => TeamPoints.Any(kvp => kvp.Value >= MaxPointsPerTeam);
 
         private void Start()
         {
@@ -40,6 +42,8 @@ namespace Assets.Scripts.Gamemode.Conquest
 
             GameOverPanel = GameObject.Find(HUD.GameOverScreen);
             GameOverPanel.SetActive(false);
+
+            GameSettings = GameObject.Find(Objects.GameSettings).GetComponent<GameSettings>();
         }
 
         private void FixedUpdate()
@@ -59,6 +63,23 @@ namespace Assets.Scripts.Gamemode.Conquest
                     ContinueGameOverProcess();
                 }
             }
+        }
+
+        public TeamType? GetWinningTeam()
+        {
+            TeamType? winningTeam = null;
+
+            List<TeamType> winningTeams = TeamPoints
+                .Where(kvp => kvp.Value >= MaxPointsPerTeam)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            if (winningTeams.Count == 1)
+            {
+                winningTeam = winningTeams.First();
+            }
+
+            return winningTeam;
         }
 
         private void StartGameOverProcess()
@@ -97,7 +118,15 @@ namespace Assets.Scripts.Gamemode.Conquest
 
             if (shouldEndGame)
             {
-                SceneManager.LoadScene(Scenes.MainMenu);
+                if (!HasSavedData)
+                {
+                    GameSettings.StartDataNormalization();
+                    HasSavedData = true;
+                }
+                else
+                {
+                    SceneManager.LoadScene(Scenes.MainMenu);
+                }
             }
         }
 

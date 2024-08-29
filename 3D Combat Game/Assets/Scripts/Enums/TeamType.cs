@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets.Scripts.Enums
 {
@@ -57,6 +58,11 @@ namespace Assets.Scripts.Enums
             }
 
             return retTeamType;
+        }
+
+        public static char GetTeamChar(TeamType team)
+        {
+            return team.ToString().ToUpper().First();
         }
     }
 }
