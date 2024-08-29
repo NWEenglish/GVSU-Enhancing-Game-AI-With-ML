@@ -11,7 +11,7 @@ namespace Assets.Scripts.MachineLearning
     public class Algorithms
     {
         private const double LearningRate = 0.5;
-        private const double RiskFactor = 0.75;
+        private const double RiskFactor = 0.95;
         private const double DiscountFactor = 1;
 
         private NormalizedGameState LoadedLearnedDate = null;
@@ -252,15 +252,15 @@ namespace Assets.Scripts.MachineLearning
             {
                 retPoints = 1000;
             }
-            // Lost
-            else if (gameWinner != currentTeam)
-            {
-                retPoints = -1000;
-            }
             // Tie
-            else
+            else if (gameWinner == null)
             {
                 retPoints = -20;
+            }
+            // Lost
+            else
+            {
+                retPoints = -1000;
             }
 
             return retPoints;

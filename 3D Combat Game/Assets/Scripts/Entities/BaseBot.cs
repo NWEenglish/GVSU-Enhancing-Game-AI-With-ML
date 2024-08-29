@@ -38,9 +38,12 @@ namespace Assets.Scripts.Entities
 
         protected void UpdateTargetDestination()
         {
-            var targetPost = Target.GetComponent<CommandPostLogic>();
-            Agent.SetDestination(Target.position);
-            Agent.stoppingDistance = Random.Range(5, targetPost.Radius - 5);
+            if (Target != null)
+            {
+                var targetPost = Target.GetComponent<CommandPostLogic>();
+                Agent.SetDestination(Target.position);
+                Agent.stoppingDistance = Random.Range(5, targetPost.Radius - 5);
+            }
         }
 
         protected bool IsInTargetArea()

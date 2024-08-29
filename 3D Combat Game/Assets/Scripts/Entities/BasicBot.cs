@@ -107,7 +107,7 @@ namespace Assets.Scripts.Entities
 
         private List<Transform> GetEnemyCommandPosts(CommandPostLogic postToSkip = null)
         {
-            var spawn = GetSpawn();
+            var spawn = GetAllySpawn();
 
             return PostLogicList
                 .Where(post => post.ControllingTeam != this.Team && post.GetComponent<CommandPostLogic>() != postToSkip)
@@ -118,39 +118,58 @@ namespace Assets.Scripts.Entities
 
         private Transform GetPostForDefensiveTarget(CommandPostLogic postToSkip = null)
         {
-            var spawn = GetSpawn();
+            Transform retTarget = null;
+
+            GameObject allySpawn = GetAllySpawn();
+            GameObject enemySpawn = GetEnemySpawn();
 
             // Closest enemy post
             var closestEnemyPost = PostLogicList
                 .Where(post => post.ControllingTeam != this.Team && post.GetComponent<CommandPostLogic>() != postToSkip)
                 .Select(post => post.gameObject.transform)
-                .OrderBy(trans => spawn.transform.GetDistanceTo(trans))
+                .OrderBy(trans => allySpawn.transform.GetDistanceTo(trans))
                 .FirstOrDefault();
+
+            // If no enemy posts, use their spawn as a reference
+            if (closestEnemyPost == null)
+            {
+                closestEnemyPost = enemySpawn.transform;
+            }
 
             // Furthest captured post before closest enemy post
             var furthestChainedCapturedPost = PostLogicList
                 .Where(post => post.ControllingTeam == this.Team
-                    && spawn.transform.GetDistanceTo(post.transform) < spawn.transform.GetDistanceTo(closestEnemyPost.transform)
+                    && allySpawn.transform.GetDistanceTo(post.transform) < allySpawn.transform.GetDistanceTo(closestEnemyPost)
                     && post.GetComponent<CommandPostLogic>() != postToSkip)
                 .Select(post => post.gameObject.transform)
-                .OrderByDescending(trans => spawn.transform.GetDistanceTo(trans))
+                .OrderByDescending(trans => allySpawn.transform.GetDistanceTo(trans))
                 .FirstOrDefault();
 
             // If no captured post, target closest enemy, else furthest captured
-            var target = furthestChainedCapturedPost != null
+            retTarget = furthestChainedCapturedPost != null
                 ? furthestChainedCapturedPost
                 : closestEnemyPost;
 
-            return target;
+            return retTarget;
         }
 
-        private GameObject GetSpawn()
+        private GameObject GetAllySpawn()
         {
             var spawnName = this.Team == TeamType.BlueTeam
                 ? Objects.BlueTeam
                 : Objects.RedTeam;
 
             GameObject spawn = GameObject.Find(spawnName);
+            return spawn;
+        }
+
+        private GameObject GetEnemySpawn()
+        {
+            var enemySpawnName = this.Team == TeamType.RedTeam
+                ? Objects.BlueTeam
+                : Objects.RedTeam;
+
+            GameObject spawn = GameObject.Find(enemySpawnName);
             return spawn;
         }
     }
