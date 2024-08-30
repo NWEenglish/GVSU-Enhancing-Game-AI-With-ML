@@ -39,6 +39,18 @@ class gameCounter:
 
         return retValue
 
+def getTeamName(team:Team):
+    retName = ""
+
+    if (team == Team.Red):
+        retName = "Red"
+    elif (team == Team.Blue):
+        retName = "Blue"
+    else:
+        retName = "Neutral"
+
+    return retName 
+
 # Loads a team's raw data from the provided directory.
 def loadAllFiles(team:Team, directory:str, binCount:int):
     allGameData:dict = {}
@@ -79,28 +91,29 @@ def loadFile(team:Team, directory:str, fileName:str):
     file.close()
     return outcome
 
-# https://www.askpython.com/python-modules/matplotlib/plot-multiple-datasets-scatterplot
-def chartGameData(gameData:dict):
-    binGroup = range(len(gameData))
+def chartGameData(team:Team, binCount:int, gameData:dict):
+    binGroup = [bin * binCount for bin in range(len(gameData))]
     wins = [v.GetValue(Result.Won) for v in list(gameData.values())]
     losses = [v.GetValue(Result.Lost) for v in list(gameData.values())]
     ties = [v.GetValue(Result.Tied) for v in list(gameData.values())]
 
+    teamName:str = getTeamName(team)
+
     # https://www.askpython.com/python-modules/matplotlib/plot-multiple-datasets-scatterplot
     fix, ax = pyplot.subplots()
-    ax.scatter(binGroup, wins, label='Wins', marker='*', color='g')
-    ax.scatter(binGroup, losses, label='Losses', marker='s', color='r')
-    ax.scatter(binGroup, ties, label='Ties', marker='v', color='b')
+    ax.scatter(binGroup, wins, label='Wins', marker='o', color='green')
+    ax.scatter(binGroup, losses, label='Losses', marker='s', color='red')
+    ax.scatter(binGroup, ties, label='Ties', marker='^', color='gray')
     ax.legend()
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y-axis')
-    ax.set_title('Multiple Datasets Scatter Plot')
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Outcomes')
+    ax.set_title(f'{teamName} Performance')
     pyplot.show()
 
 if (__name__ == "__main__"):
     team = Team.Red
     archivedDataDirectory:str = "D:\Code\GVSU-Enhancing-Game-AI-With-ML\Data Processing\Raw Data\Archive"
-    binCount:int = 10
+    binCount:int = 1
 
     gameData = loadAllFiles(team, archivedDataDirectory, binCount)
-    chartGameData(gameData)
+    chartGameData(team, binCount, gameData)
