@@ -11,11 +11,12 @@ namespace Assets.Scripts.Gamemode
     {
         public TeamType? PlayersTeam { get; private set; }
         public Dictionary<TeamType, BotAILevel> TeamAILevels { get; private set; } = new Dictionary<TeamType, BotAILevel>();
+        public bool IsNonStopMode { get; private set; }
 
         private DataNormalization DataNormalization = new DataNormalization();
         private Algorithms MLAlgorithms = new Algorithms();
 
-        public void Configure(string redTeamAILevel, string blueTeamAILevel, string playersTeam)
+        public void Configure(string redTeamAILevel, string blueTeamAILevel, string playersTeam, bool isNonStopMode)
         {
             redTeamAILevel.ThrowIfNullOrEmpty(nameof(redTeamAILevel));
             blueTeamAILevel.ThrowIfNullOrEmpty(nameof(blueTeamAILevel));
@@ -28,6 +29,7 @@ namespace Assets.Scripts.Gamemode
             };
 
             PlayersTeam = TeamTypeHelper.GetTeamType(playersTeam);
+            IsNonStopMode = isNonStopMode;
         }
 
         public void StartDataNormalization()

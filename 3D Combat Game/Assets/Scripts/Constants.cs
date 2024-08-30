@@ -45,6 +45,9 @@
         public static string BlueTeamDropDown => "BlueTeamBotType";
         public static string PlayerTeamDropDown => "PlayersTeam";
 
+        // Toggle Fields
+        public static string NonStopModeToggle => "NonStopModeCheck";
+
         // Pause Screen
         public static string PauseScreen => "PauseMenuPanel";
     }

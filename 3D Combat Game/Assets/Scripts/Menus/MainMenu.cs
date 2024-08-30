@@ -4,6 +4,7 @@ using Assets.Scripts.Gamemode;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.MainMenu
 {
@@ -37,8 +38,9 @@ namespace Assets.Scripts.MainMenu
             string redTeamAILevel = GameObject.Find(Constants.MenuScreens.RedTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
             string blueTeamAILevel = GameObject.Find(Constants.MenuScreens.BlueTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
             string playerTeam = GameObject.Find(Constants.MenuScreens.PlayerTeamDropDown)?.GetComponentInChildren<TextMeshProUGUI>()?.text;
+            bool isNonStopMode = GameObject.Find(Constants.MenuScreens.NonStopModeToggle)?.GetComponentInChildren<Toggle>()?.isOn ?? false;
 
-            GameSettings.Configure(redTeamAILevel, blueTeamAILevel, playerTeam);
+            GameSettings.Configure(redTeamAILevel, blueTeamAILevel, playerTeam, isNonStopMode);
 
             // Launch game
             SceneManager.LoadScene(Constants.Scenes.ConqustGameMode);
