@@ -1,43 +1,7 @@
+from matplotlib import pyplot as plt
 import json
 import os
-from enum import Enum
-from matplotlib import pyplot
-
-class Team(Enum):
-    Blue = 0
-    Red = 1
-    Neutral = 2
-
-class Result(Enum):
-    Won = 1
-    Lost = 2
-    Tied = 3
-
-class gameCounter:
-    def __init__(self):
-        self.won:int = 0
-        self.lost:int = 0
-        self.tied:int = 0
-
-    def CountResult(self, result:Result):
-        if (result == Result.Won):
-            self.won = self.won + 1
-        elif (result == Result.Lost):
-            self.lost = self.lost + 1
-        else:
-            self.tied = self.tied + 1
-
-    def GetValue(self, result:Result):
-        retValue = 0
-
-        if (result == Result.Won):
-            retValue = self.won
-        elif (result == Result.Lost):
-            retValue = self.lost
-        else:
-            retValue = self.tied
-
-        return retValue
+import numpy as np
 
 def getTeamName(team:Team):
     retName = ""
@@ -63,7 +27,7 @@ def loadAllFiles(team:Team, directory:str, binCount:int):
         workList = teamFiles[:binCount]
         teamFiles = teamFiles[binCount:]
 
-        gameSet = gameCounter()
+        gameSet = GameCounter()
 
         for file in workList:
             gameOutcome = loadFile(team, directory, file)
