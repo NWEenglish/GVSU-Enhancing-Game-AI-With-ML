@@ -1,0 +1,11 @@
+﻿This new version, v3, is meant to help resolve the widening gap in the win-loss for smart bots. As a basic bot team, 
+Red Team had the advantage. Since becoming smart, they've seem to of thrown out that advantage by targeting the enemy
+command posts at the start, rather than aqcuiring the nearest ones first. That's not to say they don't, but half the 
+team shouldn't be targeting the furthest post on most games. It should've learned by now that that's a failing tactic. 
+This version does three main things:
+	1) Remove ordering states by orders of magnitude. Instead it will use strict values for a state. The original idea
+		of magnitude was to prevent the worst case scenario by assigning bots to prevent it, but that seems to be 
+		failing.
+	2) Introduce state rewards. Ordinarily, we might use -1 for a new state, which encourages completing the task 
+		quicker. It will be used here, however, to encourage widening the gap between the two teams. Letting the game 
+		be won by a few points is risky, it should be attempting to "obliterate" it's enemy.

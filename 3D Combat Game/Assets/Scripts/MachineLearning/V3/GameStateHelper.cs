@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.MachineLearning.Models;
 
-namespace Assets.Scripts.MachineLearning.V2
+namespace Assets.Scripts.MachineLearning.V3
 {
     public static class GameStateHelper
     {
@@ -17,9 +16,9 @@ namespace Assets.Scripts.MachineLearning.V2
         {
             List<NormalizedGameState.GameState> nextStates = algorithm.GetNextStates(team, currentStateID);
 
-            // Order states by order of magnitude, and grab enough for 1 per bot
+            // Order states by value, and grab enough for 1 per bot
             return nextStates
-                .OrderByDescending(state => Math.Abs(state.Value))
+                .OrderByDescending(state => state.Value)
                 .Select(state => state.StateID)
                 .Take(numberOfSmartBots);
         }

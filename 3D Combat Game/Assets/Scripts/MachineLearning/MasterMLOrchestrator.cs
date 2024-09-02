@@ -5,7 +5,7 @@ using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Gamemode.Conquest;
 using Assets.Scripts.MachineLearning.Models;
-using Assets.Scripts.MachineLearning.V2;
+using Assets.Scripts.MachineLearning.V3;
 using UnityEngine;
 
 namespace Assets.Scripts.MachineLearning
@@ -76,20 +76,14 @@ namespace Assets.Scripts.MachineLearning
 
         private void EvaluateNextStates(string currentState)
         {
-            var nextStates = MLAlgorithm.GetNextStates(Team, currentState);
-
-            // Order states by order of magnitude, and grab enough for 1 per bot
-            var orderedStates = nextStates
-                .OrderByDescending(state => Math.Abs(state.Value))
-                .Select(state => state.StateID)
-                .Take(SmartBots.Count);
+            var orderedStates = GameStateHelper.GetOrderedStates(MLAlgorithm, Team, currentState, SmartBots.Count());
 
             // Assign bots based on magnitude and current targets
             Dictionary<SmartBot, int> currentBotTargets = new Dictionary<SmartBot, int>();
             foreach (var bot in SmartBots)
             {
-                int? postNumber = bot?.Target?.gameObject?.GetComponent<CommandPostLogic>()?.GetPostNumber();
-                currentBotTargets.Add(bot, postNumber ?? 0);
+                int postNumber = bot?.Target?.gameObject?.GetComponent<CommandPostLogic>()?.GetPostNumber() ?? 0;
+                currentBotTargets.Add(bot, postNumber);
             }
 
             List<int> postChanges = new List<int>();
