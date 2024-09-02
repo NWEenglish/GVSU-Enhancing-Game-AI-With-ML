@@ -1,4 +1,4 @@
-import Result
+from Result import Result
 
 class GameCounter:
     def __init__(self):
