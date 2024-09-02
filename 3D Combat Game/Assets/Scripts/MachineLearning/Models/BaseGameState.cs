@@ -9,6 +9,7 @@ namespace Assets.Scripts.MachineLearning.Models
     public class BaseGameState
     {
         public TeamType Team;
+        public int Version;
 
         public bool ToSaveFile(string path, string name = null)
         {

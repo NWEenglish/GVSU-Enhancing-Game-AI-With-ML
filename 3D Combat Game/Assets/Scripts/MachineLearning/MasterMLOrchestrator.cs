@@ -4,14 +4,16 @@ using System.Linq;
 using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Gamemode.Conquest;
-using Assets.Scripts.MachineLearning.Helpers;
 using Assets.Scripts.MachineLearning.Models;
+using Assets.Scripts.MachineLearning.V2;
 using UnityEngine;
 
 namespace Assets.Scripts.MachineLearning
 {
     public class MasterMLOrchestrator : MonoBehaviour
     {
+        private int Version => 2;
+
         private Algorithms MLAlgorithm = new Algorithms();
         private ConquestGameLogic GameLogic;
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
@@ -32,7 +34,8 @@ namespace Assets.Scripts.MachineLearning
             GameLogic = GameObject.FindObjectOfType<ConquestGameLogic>();
             GameState = new RawGameState()
             {
-                Team = Team
+                Team = Team,
+                Version = Version
             };
         }
 
@@ -177,8 +180,14 @@ namespace Assets.Scripts.MachineLearning
         {
             List<int> postsChanged = new List<int>();
 
+            int startingPostIndex = 2;
+            if (Version != 1)
+            {
+                startingPostIndex = proposedState.LastIndexOf("-") + 1;
+            }
+
             // Skip the first two since those are the percentiles
-            for (int i = 2; i < proposedState.Length; i++)
+            for (int i = startingPostIndex; i < proposedState.Length; i++)
             {
                 if (currentState.ElementAtOrDefault(i) != proposedState.ElementAtOrDefault(i))
                 {

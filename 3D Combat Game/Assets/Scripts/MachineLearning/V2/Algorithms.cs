@@ -1,15 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Assets.Scripts.Enums;
 using Assets.Scripts.MachineLearning.Models;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-namespace Assets.Scripts.MachineLearning
+namespace Assets.Scripts.MachineLearning.V2
 {
     public class Algorithms
     {
+        private const int Version = 2;
+
         private const double LearningRate = 0.5;
         private const double RiskFactor = 0.95;
         private const double DiscountFactor = 1;
@@ -19,7 +23,7 @@ namespace Assets.Scripts.MachineLearning
         private void LoadLearnedKnowledge(TeamType team)
         {
             // Check for saved data that's been learned for this team
-            string mostRecentFile = Directory.GetFiles(MLConstants.LearnedDataFilePath)
+            string mostRecentFile = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()))
                 .Where(fileName => GetTeamFromFileName(fileName) == team)
                 .OrderByDescending(fileName => GetGenFromFileName(fileName))
                 .FirstOrDefault();
@@ -47,7 +51,7 @@ namespace Assets.Scripts.MachineLearning
         public void StartSaveProcess(TeamType teamToProcess)
         {
             // Check for new normalized data; continue if any present
-            List<string> normFiles = Directory.GetFiles(MLConstants.NormalizedDataFilePath).ToList();
+            List<string> normFiles = Directory.GetFiles(MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString())).ToList();
 
             if (normFiles.Any())
             {
@@ -64,7 +68,7 @@ namespace Assets.Scripts.MachineLearning
                 }
 
                 // Check for saved data that's been learned for this team
-                List<string> teamLearnedFiles = Directory.GetFiles(MLConstants.LearnedDataFilePath)
+                List<string> teamLearnedFiles = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()))
                     .Where(fileName => GetTeamFromFileName(fileName) == teamToProcess)
                     .ToList();
 
@@ -106,7 +110,7 @@ namespace Assets.Scripts.MachineLearning
                     foreach (string normFile in normFiles)
                     {
                         string fileName = Path.GetFileName(normFile);
-                        File.Move(normFile, $"{MLConstants.NormalizedArchivedFilePath}/{fileName}");
+                        File.Move(normFile, $"{MLConstants.NormalizedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString())}/{fileName}");
                     }
 
                     if (currentGeneration % 10 == 0)
@@ -118,7 +122,9 @@ namespace Assets.Scripts.MachineLearning
                         foreach (string file in oldLearnedFiles)
                         {
                             string fileName = Path.GetFileName(file);
-                            File.Move(file, $"{MLConstants.LearnedArchivedFilePath}/{fileName}");
+                            string filePath = MLConstants.LearnedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString());
+
+                            File.Move(file, $"{filePath}/{fileName}");
                         }
                     }
                 }
@@ -214,9 +220,9 @@ namespace Assets.Scripts.MachineLearning
                     }
 
                     // If within 0-1 percentiles, include them
-                    if (thisRedScore == currentRedScore || thisRedScore == currentRedScore + 1)
+                    if (thisRedScore == currentRedScore || thisRedScore == currentRedScore + 5)
                     {
-                        if (thisBlueScore == currentBlueScore || thisBlueScore == currentBlueScore + 1)
+                        if (thisBlueScore == currentBlueScore || thisBlueScore == currentBlueScore + 5)
                         {
                             retNextStates.Add(gameState);
                         }
@@ -229,9 +235,12 @@ namespace Assets.Scripts.MachineLearning
 
         private int GetTeamScorePercentile(string stateID, TeamType team)
         {
-            int index = team == TeamType.RedTeam ? 0 : 1;
-            string rawValue = stateID.ElementAt(index).ToString();
-            int retScore = rawValue == "*" ? 10 : int.Parse(rawValue);
+            int index = (team == TeamType.RedTeam ? 0 : 1) + 1; // +1 for Group Offset from RegEx
+
+            string regex = @"(\d+)-(\d+)-(\w+)";
+            var match = Regex.Match(stateID, regex);
+            string rawValue = match.Groups.ElementAt(index).Value;
+            int retScore = int.Parse(rawValue);
 
             return retScore;
         }
@@ -269,22 +278,27 @@ namespace Assets.Scripts.MachineLearning
         private TeamType? GetWinner(string gameStateID)
         {
             // Invalid state or no winner
-            if (string.IsNullOrEmpty(gameStateID) || !gameStateID.Contains('*'))
+            if (string.IsNullOrEmpty(gameStateID))
             {
-                return null;
-            }
-            // Tie
-            else if (gameStateID.Contains("**"))
-            {
-                return null;
-            }
-            else if (gameStateID.ElementAt(0) == '*')
-            {
-                return TeamType.RedTeam;
+                throw new ArgumentNullException(nameof(gameStateID));
             }
             else
             {
-                return TeamType.BlueTeam;
+                int redScore = GetTeamScorePercentile(gameStateID, TeamType.RedTeam);
+                int blueScore = GetTeamScorePercentile(gameStateID, TeamType.BlueTeam);
+
+                if (redScore == 100 && blueScore == 100)
+                {
+                    return null;
+                }
+                else if (redScore > blueScore)
+                {
+                    return TeamType.RedTeam;
+                }
+                else
+                {
+                    return TeamType.BlueTeam;
+                }
             }
         }
 
@@ -299,7 +313,7 @@ namespace Assets.Scripts.MachineLearning
         private bool SaveKnowledge(NormalizedGameState currentKnowledge, int currentGeneration)
         {
             string fileName = $"{(int)currentKnowledge.Team}-{currentGeneration}";
-            bool wasSuccessful = currentKnowledge.ToSaveFile(MLConstants.LearnedDataFilePath, fileName);
+            bool wasSuccessful = currentKnowledge.ToSaveFile(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()), fileName);
             return wasSuccessful;
         }
 

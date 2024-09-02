@@ -7,10 +7,11 @@ using Assets.Scripts.MachineLearning.Helpers;
 using Assets.Scripts.MachineLearning.Models;
 using UnityEngine;
 
-namespace Assets.Scripts.MachineLearning
+namespace Assets.Scripts.MachineLearning.V2
 {
     public class DataNormalization
     {
+        private const int Version = 2;
         private const int DecimalPlaces = 1;
 
         public void StartProcess()
@@ -52,7 +53,7 @@ namespace Assets.Scripts.MachineLearning
                 NormalizedGameState normalizedData = Normalize(rawGameState);
 
                 // Save to new file
-                wasSuccessful = normalizedData.ToSaveFile(MLConstants.NormalizedDataFilePath);
+                wasSuccessful = normalizedData.ToSaveFile(MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()));
             }
             catch (Exception ex)
             {
@@ -71,7 +72,7 @@ namespace Assets.Scripts.MachineLearning
 
             retNormalizedGameState.States = rawGameState.States.Select(state => new NormalizedGameState.GameState()
             {
-                StateID = GameStateHelper.GetGameState(state.MaxScore, state.RedTeamScore, state.BlueTeamScore, new Dictionary<int, TeamType>()
+                StateID = GameStateHelper.GetGameState(Version, state.MaxScore, state.RedTeamScore, state.BlueTeamScore, new Dictionary<int, TeamType>()
                 {
                     { 1, state.Post1 },
                     { 2, state.Post2 },

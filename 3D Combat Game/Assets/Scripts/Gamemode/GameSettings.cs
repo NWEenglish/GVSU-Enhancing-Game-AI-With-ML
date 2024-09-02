@@ -2,7 +2,7 @@
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
-using Assets.Scripts.MachineLearning;
+using Assets.Scripts.MachineLearning.V2;
 using UnityEngine;
 
 namespace Assets.Scripts.Gamemode

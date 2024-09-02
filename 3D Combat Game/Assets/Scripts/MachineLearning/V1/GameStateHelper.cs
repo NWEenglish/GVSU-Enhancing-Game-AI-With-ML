@@ -2,17 +2,17 @@
 using System.Linq;
 using Assets.Scripts.Enums;
 
-namespace Assets.Scripts.MachineLearning.Helpers
+namespace Assets.Scripts.MachineLearning.V1
 {
     public static class GameStateHelper
     {
         public static string GetGameState(int maxPoints, int redTeamPoints, int blueTeamPoints, Dictionary<int, TeamType> postTeams)
         {
             var retGameState = new List<char>
-            {
-                GetTeamPointStateValue(maxPoints, redTeamPoints),
-                GetTeamPointStateValue(maxPoints, blueTeamPoints)
-            };
+                {
+                    GetTeamPointStateValue(maxPoints, redTeamPoints),
+                    GetTeamPointStateValue(maxPoints, blueTeamPoints)
+                };
 
             for (int index = 0; index < postTeams.Count; index++)
             {
@@ -34,7 +34,7 @@ namespace Assets.Scripts.MachineLearning.Helpers
                 retValue = (percentile * 10m).ToString().First();
             }
 
-            return retValue;
+            return retValue; // Outputs like "*5RNBBB"
         }
     }
 }
