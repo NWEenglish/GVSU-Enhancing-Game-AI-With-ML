@@ -6,6 +6,11 @@ namespace Assets.Scripts.MachineLearning.V1
 {
     public static class GameStateHelper
     {
+        public static int GetIndexForPostStates(string stateID)
+        {
+            return 2;
+        }
+
         public static string GetGameState(int maxPoints, int redTeamPoints, int blueTeamPoints, Dictionary<int, TeamType> postTeams)
         {
             var retGameState = new List<char>

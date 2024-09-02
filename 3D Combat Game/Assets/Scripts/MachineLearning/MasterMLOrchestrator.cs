@@ -180,11 +180,7 @@ namespace Assets.Scripts.MachineLearning
         {
             List<int> postsChanged = new List<int>();
 
-            int startingPostIndex = 2;
-            if (Version != 1)
-            {
-                startingPostIndex = proposedState.LastIndexOf("-") + 1;
-            }
+            int startingPostIndex = GameStateHelper.GetIndexForPostStates(proposedState);
 
             // Skip the first two since those are the percentiles
             for (int i = startingPostIndex; i < proposedState.Length; i++)

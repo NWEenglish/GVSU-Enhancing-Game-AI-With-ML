@@ -6,6 +6,11 @@ namespace Assets.Scripts.MachineLearning.V2
 {
     public static class GameStateHelper
     {
+        public static int GetIndexForPostStates(string stateID)
+        {
+            return stateID.LastIndexOf("-") + 1;
+        }
+
         public static string GetGameState(int maxPoints, int redTeamPoints, int blueTeamPoints, Dictionary<int, TeamType> postTeams)
         {
             string retGameState = string.Empty;
