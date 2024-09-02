@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Assets.Scripts.Enums;
-using Assets.Scripts.MachineLearning.Helpers;
 using Assets.Scripts.MachineLearning.Models;
 using UnityEngine;
 
@@ -72,7 +71,7 @@ namespace Assets.Scripts.MachineLearning.V2
 
             retNormalizedGameState.States = rawGameState.States.Select(state => new NormalizedGameState.GameState()
             {
-                StateID = GameStateHelper.GetGameState(Version, state.MaxScore, state.RedTeamScore, state.BlueTeamScore, new Dictionary<int, TeamType>()
+                StateID = GameStateHelper.GetGameState(state.MaxScore, state.RedTeamScore, state.BlueTeamScore, new Dictionary<int, TeamType>()
                 {
                     { 1, state.Post1 },
                     { 2, state.Post2 },
