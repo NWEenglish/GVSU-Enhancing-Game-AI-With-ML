@@ -10,7 +10,6 @@ namespace Assets.Scripts.MachineLearning.V3
 {
     public class DataNormalization
     {
-        private const int Version = 2;
         private const int DecimalPlaces = 1;
 
         public void StartProcess()
@@ -49,7 +48,7 @@ namespace Assets.Scripts.MachineLearning.V3
                 NormalizedGameState normalizedData = Normalize(rawGameState);
 
                 // Save to new file
-                wasSuccessful = normalizedData.ToSaveFile(MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()));
+                wasSuccessful = normalizedData.ToSaveFile(MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString()));
             }
             catch (Exception ex)
             {

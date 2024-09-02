@@ -7,6 +7,8 @@ namespace Assets.Scripts.MachineLearning.V3
 {
     public static class GameStateHelper
     {
+        public static int Version => 3;
+
         public static int GetIndexForPostStates(string stateID)
         {
             return stateID.LastIndexOf("-") + 1;

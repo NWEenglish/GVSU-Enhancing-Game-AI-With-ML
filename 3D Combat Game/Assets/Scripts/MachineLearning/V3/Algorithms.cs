@@ -12,8 +12,6 @@ namespace Assets.Scripts.MachineLearning.V3
 {
     public class Algorithms
     {
-        private const int Version = 2;
-
         private const double LearningRate = 0.5;
         private const double RiskFactor = 0.95;
         private const double DiscountFactor = 1;
@@ -23,7 +21,7 @@ namespace Assets.Scripts.MachineLearning.V3
         private void LoadLearnedKnowledge(TeamType team)
         {
             // Check for saved data that's been learned for this team
-            string mostRecentFile = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()))
+            string mostRecentFile = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString()))
                 .Where(fileName => GetTeamFromFileName(fileName) == team)
                 .OrderByDescending(fileName => GetGenFromFileName(fileName))
                 .FirstOrDefault();
@@ -51,7 +49,7 @@ namespace Assets.Scripts.MachineLearning.V3
         public void StartSaveProcess(TeamType teamToProcess)
         {
             // Check for new normalized data; continue if any present
-            List<string> normFiles = Directory.GetFiles(MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString())).ToList();
+            List<string> normFiles = Directory.GetFiles(MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString())).ToList();
 
             if (normFiles.Any())
             {
@@ -68,7 +66,7 @@ namespace Assets.Scripts.MachineLearning.V3
                 }
 
                 // Check for saved data that's been learned for this team
-                List<string> teamLearnedFiles = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()))
+                List<string> teamLearnedFiles = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString()))
                     .Where(fileName => GetTeamFromFileName(fileName) == teamToProcess)
                     .ToList();
 
@@ -110,7 +108,7 @@ namespace Assets.Scripts.MachineLearning.V3
                     foreach (string normFile in normFiles)
                     {
                         string fileName = Path.GetFileName(normFile);
-                        File.Move(normFile, $"{MLConstants.NormalizedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString())}/{fileName}");
+                        File.Move(normFile, $"{MLConstants.NormalizedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString())}/{fileName}");
                     }
 
                     if (currentGeneration % 10 == 0)
@@ -122,7 +120,7 @@ namespace Assets.Scripts.MachineLearning.V3
                         foreach (string file in oldLearnedFiles)
                         {
                             string fileName = Path.GetFileName(file);
-                            string filePath = MLConstants.LearnedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString());
+                            string filePath = MLConstants.LearnedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString());
 
                             File.Move(file, $"{filePath}/{fileName}");
                         }
@@ -310,7 +308,7 @@ namespace Assets.Scripts.MachineLearning.V3
         private bool SaveKnowledge(NormalizedGameState currentKnowledge, int currentGeneration)
         {
             string fileName = $"{(int)currentKnowledge.Team}-{currentGeneration}";
-            bool wasSuccessful = currentKnowledge.ToSaveFile(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, Version.ToString()), fileName);
+            bool wasSuccessful = currentKnowledge.ToSaveFile(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString()), fileName);
             return wasSuccessful;
         }
 
