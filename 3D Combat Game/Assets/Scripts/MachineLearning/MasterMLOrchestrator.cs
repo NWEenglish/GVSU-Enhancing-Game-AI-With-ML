@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Gamemode.Conquest;
 using Assets.Scripts.MachineLearning.Models;
-using Assets.Scripts.MachineLearning.V3;
+using Assets.Scripts.MachineLearning.V4;
 using UnityEngine;
 
 namespace Assets.Scripts.MachineLearning

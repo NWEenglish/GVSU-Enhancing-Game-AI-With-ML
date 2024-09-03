@@ -1,0 +1,2 @@
+﻿Previous version had incorreclty incorporated the Q-Learnign algorithm, which resulted in actual reinforced learning 
+not occuring. This change corrects the equation.
