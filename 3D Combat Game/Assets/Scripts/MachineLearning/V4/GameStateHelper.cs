@@ -7,7 +7,7 @@ namespace Assets.Scripts.MachineLearning.V4
 {
     public static class GameStateHelper
     {
-        public static int Version => 3;
+        public static int Version => 4;
 
         public static int GetIndexForPostStates(string stateID)
         {
