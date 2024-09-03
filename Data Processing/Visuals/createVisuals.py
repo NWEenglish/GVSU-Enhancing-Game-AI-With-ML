@@ -57,7 +57,9 @@ def isFileOtherGameVersionArchived(archivePath:str, currentVersion:int, fileName
         otherArchive = f'{archivePath} - V{version}'
         potentialOtherName = f'{otherArchive}\{fileName}'
         retFileExists = os.path.exists(potentialOtherName)
-        break
+
+        if retFileExists:
+            break
 
     return retFileExists
 
@@ -122,10 +124,10 @@ def chartGameData(team:Team, binCount:int, degrees:int, gameData:dict, version:i
 
 if (__name__ == "__main__"):
     archivedDataDirectory:str = "D:\Code\GVSU-Enhancing-Game-AI-With-ML\Data Processing\Raw Data\Archive"
-    runningVersion:int = 3
+    runningVersion:int = 4
     team = Team.Red
 
-    auditedVersion:int = 2
+    auditedVersion:int = 4
     degrees:int = 1
     binCount:int = 1
 

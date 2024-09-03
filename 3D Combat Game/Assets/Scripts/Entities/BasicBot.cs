@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Constants;
 using Assets.Scripts.Enums;
@@ -20,7 +19,8 @@ namespace Assets.Scripts.Entities
         public void InitValues(TeamType team)
         {
             BaseBotStart(team);
-            TargetingStyle = (TargetingStyle)Random.Range(0, Enum.GetValues(typeof(TargetingStyle)).Length);
+            //TargetingStyle = (TargetingStyle)Random.Range(0, Enum.GetValues(typeof(TargetingStyle)).Length);
+            TargetingStyle = TargetingStyle.Random;
         }
 
         private void Update()

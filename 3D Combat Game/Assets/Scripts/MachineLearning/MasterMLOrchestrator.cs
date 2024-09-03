@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Entities;
@@ -12,8 +12,6 @@ namespace Assets.Scripts.MachineLearning
 {
     public class MasterMLOrchestrator : MonoBehaviour
     {
-        private int Version => 2;
-
         private Algorithms MLAlgorithm = new Algorithms();
         private ConquestGameLogic GameLogic;
         private List<CommandPostLogic> PostLogicList = new List<CommandPostLogic>();
@@ -35,7 +33,7 @@ namespace Assets.Scripts.MachineLearning
             GameState = new RawGameState()
             {
                 Team = Team,
-                Version = Version
+                Version = GameStateHelper.Version
             };
         }
 
