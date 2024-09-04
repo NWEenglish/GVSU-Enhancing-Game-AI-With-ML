@@ -19,7 +19,7 @@ namespace Assets.Scripts.Entities
         public void InitValues(TeamType team)
         {
             BaseBotStart(team);
-            //TargetingStyle = (TargetingStyle)Random.Range(0, Enum.GetValues(typeof(TargetingStyle)).Length);
+            //TargetingStyle = (TargetingStyle)Random.Range(0, System.Enum.GetValues(typeof(TargetingStyle)).Length);
             TargetingStyle = TargetingStyle.Random;
         }
 

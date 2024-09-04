@@ -8,9 +8,22 @@ namespace Assets.Scripts.MachineLearning.V2
 {
     public static class GameStateHelper
     {
-        public static int GetIndexForPostStates(string stateID)
+        public static List<int> DetermineStateDifferences(string currentState, string proposedState)
         {
-            return stateID.LastIndexOf("-") + 1;
+            List<int> postsChanged = new List<int>();
+
+            int startingPostIndex = proposedState.LastIndexOf("-") + 1;
+
+            // Skip the first two since those are the percentiles
+            for (int i = startingPostIndex; i < proposedState.Length; i++)
+            {
+                if (currentState.ElementAtOrDefault(i) != proposedState.ElementAtOrDefault(i))
+                {
+                    postsChanged.Add(i);
+                }
+            }
+
+            return postsChanged;
         }
 
         public static IEnumerable<string> GetOrderedStates(Algorithms algorithm, TeamType team, string currentStateID, int numberOfSmartBots)

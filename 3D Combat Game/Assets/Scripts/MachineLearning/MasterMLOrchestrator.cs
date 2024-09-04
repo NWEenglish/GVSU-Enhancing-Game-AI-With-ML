@@ -87,7 +87,7 @@ namespace Assets.Scripts.MachineLearning
             List<int> postChanges = new List<int>();
             foreach (var state in orderedStates)
             {
-                postChanges.AddRange(DetermineStateDifferences(currentState, state));
+                postChanges.AddRange(GameStateHelper.DetermineStateDifferences(currentState, state));
             }
 
             Dictionary<int, int> postCounts = new Dictionary<int, int>();
@@ -166,24 +166,6 @@ namespace Assets.Scripts.MachineLearning
 
                 bot.UpdateTarget(newTarget);
             }
-        }
-
-        private List<int> DetermineStateDifferences(string currentState, string proposedState)
-        {
-            List<int> postsChanged = new List<int>();
-
-            int startingPostIndex = GameStateHelper.GetIndexForPostStates(proposedState);
-
-            // Skip the first two since those are the percentiles
-            for (int i = startingPostIndex; i < proposedState.Length; i++)
-            {
-                if (currentState.ElementAtOrDefault(i) != proposedState.ElementAtOrDefault(i))
-                {
-                    postsChanged.Add(i);
-                }
-            }
-
-            return postsChanged;
         }
 
         private RawGameState.GameState GetGameState()
