@@ -5,7 +5,7 @@ using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Gamemode.Conquest;
 using Assets.Scripts.MachineLearning.Models;
-using Assets.Scripts.MachineLearning.V4;
+using Assets.Scripts.MachineLearning.V5;
 using UnityEngine;
 
 namespace Assets.Scripts.MachineLearning
@@ -87,7 +87,7 @@ namespace Assets.Scripts.MachineLearning
             List<int> postChanges = new List<int>();
             foreach (var state in orderedStates)
             {
-                postChanges.AddRange(GameStateHelper.DetermineStateDifferences(currentState, state));
+                postChanges.AddRange(GameStateHelper.DetermineStateDifferences(currentState, state, Team));
             }
 
             Dictionary<int, int> postCounts = new Dictionary<int, int>();

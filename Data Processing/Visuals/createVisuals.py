@@ -124,10 +124,10 @@ def chartGameData(team:Team, binCount:int, degrees:int, gameData:dict, version:i
 
 if (__name__ == "__main__"):
     archivedDataDirectory:str = "D:\Code\GVSU-Enhancing-Game-AI-With-ML\Data Processing\Raw Data\Archive"
-    runningVersion:int = 4
+    runningVersion:int = 5
     team = Team.Red
 
-    auditedVersion:int = 4
+    auditedVersion:int = 5
     degrees:int = 1
     binCount:int = 1
 

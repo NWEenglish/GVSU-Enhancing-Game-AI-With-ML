@@ -1,0 +1,2 @@
+﻿Updated the orchestrator to not consider enemy or neutral post changes. Instead, the orchestrator is concerned with
+satisfying accomplishing its team's required posts in the desired state.
