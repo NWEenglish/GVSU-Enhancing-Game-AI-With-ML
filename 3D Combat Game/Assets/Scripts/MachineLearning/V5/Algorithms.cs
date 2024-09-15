@@ -17,6 +17,8 @@ namespace Assets.Scripts.MachineLearning.V5
         private const double DiscountFactor = 1;
 
         private NormalizedGameState LoadedLearnedDate = null;
+        private List<LearnedGameState> LearnedGameStates = null;
+
 
         private void LoadLearnedKnowledge(TeamType team)
         {
@@ -30,9 +32,15 @@ namespace Assets.Scripts.MachineLearning.V5
             {
                 LoadedLearnedDate = ReadInGameState(mostRecentFile);
             }
+
+            if (LoadedLearnedDate != null)
+            {
+                LearnedGameStates = new List<LearnedGameState>();
+                LoadedLearnedDate.States.ForEach(state => LearnedGameStates.Add(new LearnedGameState(state.StateID, state.Value)));
+            }
         }
 
-        public List<NormalizedGameState.GameState> GetNextStates(TeamType team, string stateID)
+        public List<LearnedGameState> GetNextStates(TeamType team, string stateID)
         {
             if (LoadedLearnedDate == null)
             {
@@ -42,7 +50,7 @@ namespace Assets.Scripts.MachineLearning.V5
             int currentRedScore = GetTeamScorePercentile(stateID, TeamType.RedTeam);
             int currentBlueScore = GetTeamScorePercentile(stateID, TeamType.BlueTeam);
 
-            List<NormalizedGameState.GameState> retNextStates = GetApplicableNextStates(LoadedLearnedDate, currentRedScore, currentBlueScore);
+            List<LearnedGameState> retNextStates = GetApplicableNextStates(LearnedGameStates, currentRedScore, currentBlueScore, team);
             return retNextStates;
         }
 
@@ -166,7 +174,7 @@ namespace Assets.Scripts.MachineLearning.V5
                     }
 
                     // Find the next best state
-                    double maxNextValue = BestNextStateValue(currentKnowledge, currentState.StateID);
+                    double maxNextValue = BestNextStateValue(currentKnowledge, currentState.StateID, currentKnowledge.ToLearnedGameStates());
 
                     // Calculate this state's value
                     double newStateValue = GetNewStateValue(currentValue, reward, maxNextValue);
@@ -187,14 +195,14 @@ namespace Assets.Scripts.MachineLearning.V5
             return currentKnowledge;
         }
 
-        private double BestNextStateValue(NormalizedGameState currentKnowledge, string currentStateID)
+        private double BestNextStateValue(NormalizedGameState currentKnowledge, string currentStateID, List<LearnedGameState> learnedGameStates)
         {
             double retBestNextStateValue = 0;
 
             int currentRedScore = GetTeamScorePercentile(currentStateID, TeamType.RedTeam);
             int currentBlueScore = GetTeamScorePercentile(currentStateID, TeamType.BlueTeam);
 
-            List<NormalizedGameState.GameState> applicableGameStates = GetApplicableNextStates(currentKnowledge, currentRedScore, currentBlueScore);
+            List<LearnedGameState> applicableGameStates = GetApplicableNextStates(learnedGameStates, currentRedScore, currentBlueScore, currentKnowledge.Team);
 
             retBestNextStateValue = applicableGameStates
                 .OrderByDescending(state => state.Value)
@@ -203,31 +211,98 @@ namespace Assets.Scripts.MachineLearning.V5
             return retBestNextStateValue;
         }
 
-        private List<NormalizedGameState.GameState> GetApplicableNextStates(NormalizedGameState currentKnowledge, int currentRedScore, int currentBlueScore)
+        private List<LearnedGameState> GetApplicableNextStates(List<LearnedGameState> currentKnowledge, int currentRedScore, int currentBlueScore, TeamType team)
         {
-            var retNextStates = new List<NormalizedGameState.GameState>();
+            var retNextStates = new List<LearnedGameState>();
 
             if (currentKnowledge != null)
             {
-                foreach (NormalizedGameState.GameState gameState in currentKnowledge.States)
-                {
-                    int thisRedScore = GetTeamScorePercentile(gameState.StateID, TeamType.RedTeam);
-                    int thisBlueScore = GetTeamScorePercentile(gameState.StateID, TeamType.BlueTeam);
-
-                    // If within 0-1 percentiles, include them
-                    if (thisRedScore == currentRedScore || thisRedScore == currentRedScore + 5)
-                    {
-                        if (thisBlueScore == currentBlueScore || thisBlueScore == currentBlueScore + 5)
-                        {
-                            retNextStates.Add(gameState);
-                        }
-                    }
-                }
+                retNextStates = currentKnowledge
+                    .Where(state => IsPointPercentileWithinRange(currentRedScore, state.RedTeamPointsPercentile, currentBlueScore, state.BlueTeamPointsPercentile, team))
+                    .ToList();
             }
 
             return retNextStates;
         }
 
+        private bool IsPointPercentileWithinRange(double currentRedPoints, double proposedRedPoints, double currentBluePoints, double proposedBluePoints, TeamType currentTeam)
+        {
+            bool retIsWithinRange = false;
+
+            // Same point state
+            if (currentRedPoints == proposedRedPoints && currentBluePoints == proposedBluePoints)
+            {
+                retIsWithinRange = true;
+            }
+            // Both teams advance to next point state
+            else if (currentRedPoints + 5 == proposedRedPoints && currentBluePoints + 5 == proposedBluePoints)
+            {
+                retIsWithinRange = true;
+            }
+            else if (currentRedPoints == proposedRedPoints && currentBluePoints + 5 == proposedBluePoints)
+            {
+                retIsWithinRange = true;
+            }
+            else if (currentRedPoints + 5 == proposedRedPoints && currentBluePoints + 5 == proposedBluePoints)
+            {
+                retIsWithinRange = true;
+            }
+
+            // Only smart team advances to next point state
+            //else
+            //{
+            //    // Assume current team is red
+            //    double thisTeamsPoints = currentRedPoints;
+            //    double proposedThisTeamsPoints = proposedRedPoints;
+
+            //    double enemyPoints = currentBluePoints;
+            //    double poposedEnemyPoints = proposedBluePoints;
+
+            //    // If not red, switch values around
+            //    if (currentTeam == TeamType.BlueTeam)
+            //    {
+            //        thisTeamsPoints = currentBluePoints;
+            //        proposedThisTeamsPoints = proposedBluePoints;
+
+            //        enemyPoints = currentRedPoints;
+            //        poposedEnemyPoints = proposedRedPoints;
+            //    }
+
+            //    // Smart team can advance, enemy team stays the same
+            //    if (thisTeamsPoints + 5 == proposedThisTeamsPoints && enemyPoints == poposedEnemyPoints)
+            //    {
+            //        retIsWithinRange = true;
+            //    }
+            //}
+
+            return retIsWithinRange;
+        }
+
+        // V6 - Fully remove
+        private bool IsPointPercentileWithinRange(double currentTeamPoints, double poposedStateTeamPoints, TeamType currentTeam, TeamType stateTeam)
+        {
+            bool retIsWithinRange = false;
+
+            // It's the same state for that team
+            if (currentTeamPoints == poposedStateTeamPoints)
+            {
+                retIsWithinRange = true;
+            }
+            // It's the next state for that team
+            else if (currentTeamPoints + 5 == poposedStateTeamPoints)
+            {
+                // I think this might be pointless. State value should be accounting for preventing the enemy from advancing far
+                // We don't want to consider states that the current team isn't advancing, and the enemy is.
+                if (currentTeam == stateTeam)
+                {
+                    retIsWithinRange = true;
+                }
+            }
+
+            return retIsWithinRange;
+        }
+
+        // V6 - Remove
         private int GetTeamScorePercentile(string stateID, TeamType team)
         {
             int index = (team == TeamType.RedTeam ? 0 : 1) + 1; // +1 for Group Offset from RegEx

@@ -29,9 +29,9 @@ namespace Assets.Scripts.MachineLearning.V5
             return postsChanged;
         }
 
-        public static IEnumerable<string> GetOrderedStates(Algorithms algorithm, TeamType team, string currentStateID, int numberOfSmartBots)
+        public static List<string> GetOrderedStates(Algorithms algorithm, TeamType team, string currentStateID, int numberOfSmartBots)
         {
-            List<NormalizedGameState.GameState> nextStates = algorithm.GetNextStates(team, currentStateID);
+            List<LearnedGameState> nextStates = algorithm.GetNextStates(team, currentStateID);
 
             int numberOfPositiveNextStates = nextStates.Count(state => state.Value > 0);
 
@@ -48,7 +48,8 @@ namespace Assets.Scripts.MachineLearning.V5
                 .Select(state => state.StateID)
                 //.Take(numberOfStatesToGrab); // Only take 20% of the top states
                 //.Take(1); // Future V6? - Might use take 1 instead of one per bot.. we add a weight based on value of state, but we don't have the info here
-                .Take(numberOfSmartBots); // This idea was essentially bagged voting. Using weight would be a weighted bag voting. Maybe keep this - it's a "good-ish" concept. Maybe we just need to fix pathing
+                .Take(numberOfSmartBots) // This idea was essentially bagged voting. Using weight would be a weighted bag voting. Maybe keep this - it's a "good-ish" concept. Maybe we just need to fix pathing
+                .ToList();
         }
 
         public static string GetGameState(int maxPoints, int redTeamPoints, int blueTeamPoints, Dictionary<int, TeamType> postTeams)
