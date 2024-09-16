@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Assets.Scripts.MachineLearning.Models
 {
-    public class LearnedGameState //: BaseGameState
+    public class LearnedGameState
     {
         public int RedTeamPointsPercentile { get; set; }
         public int BlueTeamPointsPercentile { get; set; }
@@ -11,7 +11,7 @@ namespace Assets.Scripts.MachineLearning.Models
         public string StateID { get; set; }
         public double Value { get; set; }
 
-        public LearnedGameState(string stateID, double stateValue)//, TeamType team, int version)
+        public LearnedGameState(string stateID, double stateValue)
         {
             string regex = @"(\d+)-(\d+)-(\w+)";
             var match = Regex.Match(stateID, regex);
@@ -23,8 +23,6 @@ namespace Assets.Scripts.MachineLearning.Models
 
             StateID = stateID;
             Value = stateValue;
-            //Team = team;
-            //Version = version;
         }
     }
 }

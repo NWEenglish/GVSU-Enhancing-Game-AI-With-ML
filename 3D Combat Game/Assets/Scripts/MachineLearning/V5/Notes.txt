@@ -2,10 +2,11 @@
 satisfying accomplishing its team's required posts in the desired state.
 
 Changes during V5 training:
-	* Epoch  94 -> Testing to take only the top 1 state
-	* Epoch  95 -> Testing to take oply the top 20% of states
-	* Epoch 120 -> Reverted the above changes
-	* Epoch 321 -> Optimized grabbing the next best state
-	* Epoch 393 -> Rsolved an error for not setting the correct previous state value during back-propagation
-	* Epoch 438 -> Update to not grab applicable states where the smart team doesn't adavnce to the next point set, but the enemy does
-	* Epoch 451 -> Revert above
+	* Epoch   94 -> Testing to take only the top 1 state
+	* Epoch   95 -> Testing to take oply the top 20% of states
+	* Epoch  120 -> Reverted the above changes
+	* Epoch  321 -> Optimized grabbing the next best state
+	* Epoch  393 -> Rsolved an error for not setting the correct previous state value during back-propagation
+	* Epoch  438 -> Update to not grab applicable states where the smart team doesn't adavnce to the next point set, but the enemy does
+	* Epoch  451 -> Revert above
+	* Epoch 1204 -> Optimizations

@@ -47,8 +47,9 @@ namespace Assets.Scripts.MachineLearning.V5
                 LoadLearnedKnowledge(team);
             }
 
-            int currentRedScore = GetTeamScorePercentile(stateID, TeamType.RedTeam);
-            int currentBlueScore = GetTeamScorePercentile(stateID, TeamType.BlueTeam);
+            Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(stateID);
+            int currentRedScore = currentScores.GetValueOrDefault(TeamType.RedTeam);
+            int currentBlueScore = currentScores.GetValueOrDefault(TeamType.BlueTeam);
 
             List<LearnedGameState> retNextStates = GetApplicableNextStates(LearnedGameStates, currentRedScore, currentBlueScore, team);
             return retNextStates;
@@ -160,8 +161,9 @@ namespace Assets.Scripts.MachineLearning.V5
                 // Bring knowledge back by learning with Q-Learning
                 else
                 {
-                    int thisTeamScore = GetTeamScorePercentile(currentState.StateID, currentKnowledge.Team);
-                    int otherTeamScore = GetTeamScorePercentile(currentState.StateID, TeamTypeHelper.GetEnemyTeam(currentKnowledge.Team));
+                    Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(currentState.StateID);
+                    int thisTeamScore = currentScores.GetValueOrDefault(currentKnowledge.Team);
+                    int otherTeamScore = currentScores.GetValueOrDefault(TeamTypeHelper.GetEnemyTeam(currentKnowledge.Team));
 
                     // Reward is equal to the point difference. Higher reward for higher gap
                     double reward = thisTeamScore - otherTeamScore;
@@ -199,8 +201,9 @@ namespace Assets.Scripts.MachineLearning.V5
         {
             double retBestNextStateValue = 0;
 
-            int currentRedScore = GetTeamScorePercentile(currentStateID, TeamType.RedTeam);
-            int currentBlueScore = GetTeamScorePercentile(currentStateID, TeamType.BlueTeam);
+            Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(currentStateID);
+            int currentRedScore = currentScores.GetValueOrDefault(TeamType.RedTeam);
+            int currentBlueScore = currentScores.GetValueOrDefault(TeamType.BlueTeam);
 
             List<LearnedGameState> applicableGameStates = GetApplicableNextStates(learnedGameStates, currentRedScore, currentBlueScore, currentKnowledge.Team);
 
@@ -248,71 +251,28 @@ namespace Assets.Scripts.MachineLearning.V5
                 retIsWithinRange = true;
             }
 
-            // Only smart team advances to next point state
-            //else
-            //{
-            //    // Assume current team is red
-            //    double thisTeamsPoints = currentRedPoints;
-            //    double proposedThisTeamsPoints = proposedRedPoints;
-
-            //    double enemyPoints = currentBluePoints;
-            //    double poposedEnemyPoints = proposedBluePoints;
-
-            //    // If not red, switch values around
-            //    if (currentTeam == TeamType.BlueTeam)
-            //    {
-            //        thisTeamsPoints = currentBluePoints;
-            //        proposedThisTeamsPoints = proposedBluePoints;
-
-            //        enemyPoints = currentRedPoints;
-            //        poposedEnemyPoints = proposedRedPoints;
-            //    }
-
-            //    // Smart team can advance, enemy team stays the same
-            //    if (thisTeamsPoints + 5 == proposedThisTeamsPoints && enemyPoints == poposedEnemyPoints)
-            //    {
-            //        retIsWithinRange = true;
-            //    }
-            //}
-
             return retIsWithinRange;
         }
 
-        // V6 - Fully remove
-        private bool IsPointPercentileWithinRange(double currentTeamPoints, double poposedStateTeamPoints, TeamType currentTeam, TeamType stateTeam)
+        private Dictionary<TeamType, int> GetTeamScorePercentile(string stateID)
         {
-            bool retIsWithinRange = false;
+            var retTeamScores = new Dictionary<TeamType, int>();
 
-            // It's the same state for that team
-            if (currentTeamPoints == poposedStateTeamPoints)
-            {
-                retIsWithinRange = true;
-            }
-            // It's the next state for that team
-            else if (currentTeamPoints + 5 == poposedStateTeamPoints)
-            {
-                // I think this might be pointless. State value should be accounting for preventing the enemy from advancing far
-                // We don't want to consider states that the current team isn't advancing, and the enemy is.
-                if (currentTeam == stateTeam)
-                {
-                    retIsWithinRange = true;
-                }
-            }
-
-            return retIsWithinRange;
-        }
-
-        // V6 - Remove
-        private int GetTeamScorePercentile(string stateID, TeamType team)
-        {
-            int index = (team == TeamType.RedTeam ? 0 : 1) + 1; // +1 for Group Offset from RegEx
+            int blueIndex = 2;
+            int redIndex = 1;
 
             string regex = @"(\d+)-(\d+)-(\w+)";
             var match = Regex.Match(stateID, regex);
-            string rawValue = match.Groups.ElementAt(index).Value;
-            int retScore = int.Parse(rawValue);
 
-            return retScore;
+            string redRawValue = match.Groups.ElementAt(redIndex).Value;
+            int redScore = int.Parse(redRawValue);
+            retTeamScores.Add(TeamType.RedTeam, redScore);
+
+            string blueRawValue = match.Groups.ElementAt(blueIndex).Value;
+            int blueScore = int.Parse(blueRawValue);
+            retTeamScores.Add(TeamType.BlueTeam, blueScore);
+
+            return retTeamScores;
         }
 
         private double GetNewStateValue(double currentValue, double reward, double maxNextValue)
@@ -354,8 +314,9 @@ namespace Assets.Scripts.MachineLearning.V5
             }
             else
             {
-                int redScore = GetTeamScorePercentile(gameStateID, TeamType.RedTeam);
-                int blueScore = GetTeamScorePercentile(gameStateID, TeamType.BlueTeam);
+                Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(gameStateID);
+                int redScore = currentScores.GetValueOrDefault(TeamType.RedTeam);
+                int blueScore = currentScores.GetValueOrDefault(TeamType.BlueTeam);
 
                 if (redScore == 100 && blueScore == 100)
                 {
