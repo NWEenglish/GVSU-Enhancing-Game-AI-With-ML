@@ -63,12 +63,26 @@ namespace Assets.Scripts.MachineLearning
             }
             else if (LastGameState != currentState || Time.time >= LastStateSave + MinTimeBetweeenSaves)
             {
+                bool isNewGame = string.IsNullOrEmpty(LastGameState);
+                bool shouldEvaluateNextStates = isNewGame;
+
+                if (!isNewGame)
+                {
+                    // If we're in a new percentile state, update targets
+                    Dictionary<TeamType, int> lastGameStateScores = GameStateHelper.GetTeamScorePercentile(LastGameState);
+                    Dictionary<TeamType, int> currGameStateScores = GameStateHelper.GetTeamScorePercentile(currentState);
+                    shouldEvaluateNextStates = lastGameStateScores.Any(kvp => currGameStateScores[kvp.Key] != kvp.Value);
+                }
+
+                if (shouldEvaluateNextStates)
+                {
+                    // Get updated list of next moves
+                    EvaluateNextStates(currentState);
+                }
+
                 LastGameState = currentState;
                 LastStateSave = Time.time;
                 GameState.States.Add(GetGameState());
-
-                // Get updated list of next moves
-                EvaluateNextStates(currentState);
             }
         }
 
@@ -78,6 +92,8 @@ namespace Assets.Scripts.MachineLearning
 
             // Assign bots based on magnitude and current targets
             Dictionary<SmartBot, int> currentBotTargets = new Dictionary<SmartBot, int>();
+
+            // Get each bots current target
             foreach (var bot in SmartBots)
             {
                 int postNumber = bot?.Target?.gameObject?.GetComponent<CommandPostLogic>()?.GetPostNumber() ?? 0;
@@ -110,16 +126,15 @@ namespace Assets.Scripts.MachineLearning
             // First pass is to unassign extra bots
             foreach (var post in sortedPostNeed)
             {
-                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Value);
+                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Key);
                 int alreadyAssigned = botsAssignedToPost.Count();
-                int netChange = post.Value - alreadyAssigned;
+                int netChange = Math.Abs(post.Value - alreadyAssigned);
 
                 if (netChange < 0)
                 {
-                    int botsToRemove = Math.Abs(netChange);
                     var botsBeingRemoved = botsAssignedToPost
                         .OrderByDescending(kvp => kvp.Key.DistanceToTarget())
-                        .Take(botsToRemove)
+                        .Take(netChange)
                         .ToList();
 
                     foreach (var bot in botsBeingRemoved)
@@ -132,18 +147,17 @@ namespace Assets.Scripts.MachineLearning
             // Second pass is to assign extra bots
             foreach (var post in sortedPostNeed)
             {
-                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Value);
+                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Key);
                 int alreadyAssigned = botsAssignedToPost.Count();
-                int netChange = post.Value - alreadyAssigned;
+                int netChange = Math.Abs(post.Value - alreadyAssigned);
 
                 if (netChange > 0)
                 {
-                    int botsToAdd = Math.Abs(netChange);
                     var unassignedBots = currentBotTargets
                         .Where(kvp => kvp.Value == 0)
                         .OrderBy(kvp => kvp.Key.DistanceToTarget())
                         .Select(kvp => kvp.Key)
-                        .Take(botsToAdd)
+                        .Take(netChange)
                         .ToList();
 
                     foreach (var uBot in unassignedBots)

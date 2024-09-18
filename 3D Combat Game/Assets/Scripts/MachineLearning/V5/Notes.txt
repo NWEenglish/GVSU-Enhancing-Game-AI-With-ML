@@ -10,3 +10,5 @@ Changes during V5 training:
 	* Epoch  438 -> Update to not grab applicable states where the smart team doesn't adavnce to the next point set, but the enemy does
 	* Epoch  451 -> Revert above
 	* Epoch 1204 -> Optimizations
+	* Epoch 1205 -> Fix determining post to target
+	* Epoch 1213 -> Limit next state checks based on percentile changes (rather than overall StateID changes - it was too chaotic/spastic)

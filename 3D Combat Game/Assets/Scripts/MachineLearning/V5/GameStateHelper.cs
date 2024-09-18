@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Assets.Scripts.Enums;
 using Assets.Scripts.MachineLearning.Models;
 
@@ -15,7 +16,7 @@ namespace Assets.Scripts.MachineLearning.V5
 
             int startingPostIndex = proposedState.LastIndexOf("-") + 1;
 
-            // Skip the first two since those are the percentiles
+            // Skip the first two groups since those are the percentiles
             for (int i = startingPostIndex; i < proposedState.Length; i++)
             {
                 // Only grab posts rquired for the next state
@@ -34,12 +35,16 @@ namespace Assets.Scripts.MachineLearning.V5
             List<LearnedGameState> nextStates = algorithm.GetNextStates(team, currentStateID);
 
             int numberOfPositiveNextStates = nextStates.Count(state => state.Value > 0);
+            int numberOfStatesToGrab = numberOfPositiveNextStates > 0
+                ? (int)(numberOfPositiveNextStates * .2f)
+                : 5;
 
             // Order states by value, and grab enough for 1 per bot
             return nextStates
                 .OrderByDescending(state => state.Value)
                 .Select(state => state.StateID)
-                .Take(numberOfSmartBots) // This idea was essentially bagged voting. Using weight would be a weighted bag voting. Maybe keep this - it's a "good-ish" concept. Maybe we just need to fix pathing
+                //.Take(numberOfSmartBots) // This idea was essentially bagged voting. Using weight would be a weighted bag voting. Maybe keep this - it's a "good-ish" concept. Maybe we just need to fix pathing
+                .Take(numberOfStatesToGrab)
                 .ToList();
         }
 
@@ -62,6 +67,27 @@ namespace Assets.Scripts.MachineLearning.V5
             retGameState = $"{redTeamState}-{blueTeamState}-{stateOfPosts}"; // Outputs like "95-20-RRRNB"
 
             return new string(retGameState.ToArray());
+        }
+
+        public static Dictionary<TeamType, int> GetTeamScorePercentile(string stateID)
+        {
+            var retTeamScores = new Dictionary<TeamType, int>();
+
+            int blueIndex = 2;
+            int redIndex = 1;
+
+            string regex = @"(\d+)-(\d+)-(\w+)";
+            var match = Regex.Match(stateID, regex);
+
+            string redRawValue = match.Groups.ElementAt(redIndex).Value;
+            int redScore = int.Parse(redRawValue);
+            retTeamScores.Add(TeamType.RedTeam, redScore);
+
+            string blueRawValue = match.Groups.ElementAt(blueIndex).Value;
+            int blueScore = int.Parse(blueRawValue);
+            retTeamScores.Add(TeamType.BlueTeam, blueScore);
+
+            return retTeamScores;
         }
 
         private static string GetTeamPointStateValue(int maxPoints, int teamPoints)

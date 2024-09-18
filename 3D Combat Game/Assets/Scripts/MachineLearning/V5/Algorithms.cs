@@ -19,7 +19,6 @@ namespace Assets.Scripts.MachineLearning.V5
         private NormalizedGameState LoadedLearnedDate = null;
         private List<LearnedGameState> LearnedGameStates = null;
 
-
         private void LoadLearnedKnowledge(TeamType team)
         {
             // Check for saved data that's been learned for this team
@@ -47,7 +46,7 @@ namespace Assets.Scripts.MachineLearning.V5
                 LoadLearnedKnowledge(team);
             }
 
-            Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(stateID);
+            Dictionary<TeamType, int> currentScores = GameStateHelper.GetTeamScorePercentile(stateID);
             int currentRedScore = currentScores.GetValueOrDefault(TeamType.RedTeam);
             int currentBlueScore = currentScores.GetValueOrDefault(TeamType.BlueTeam);
 
@@ -161,7 +160,7 @@ namespace Assets.Scripts.MachineLearning.V5
                 // Bring knowledge back by learning with Q-Learning
                 else
                 {
-                    Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(currentState.StateID);
+                    Dictionary<TeamType, int> currentScores = GameStateHelper.GetTeamScorePercentile(currentState.StateID);
                     int thisTeamScore = currentScores.GetValueOrDefault(currentKnowledge.Team);
                     int otherTeamScore = currentScores.GetValueOrDefault(TeamTypeHelper.GetEnemyTeam(currentKnowledge.Team));
 
@@ -201,7 +200,7 @@ namespace Assets.Scripts.MachineLearning.V5
         {
             double retBestNextStateValue = 0;
 
-            Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(currentStateID);
+            Dictionary<TeamType, int> currentScores = GameStateHelper.GetTeamScorePercentile(currentStateID);
             int currentRedScore = currentScores.GetValueOrDefault(TeamType.RedTeam);
             int currentBlueScore = currentScores.GetValueOrDefault(TeamType.BlueTeam);
 
@@ -254,27 +253,6 @@ namespace Assets.Scripts.MachineLearning.V5
             return retIsWithinRange;
         }
 
-        private Dictionary<TeamType, int> GetTeamScorePercentile(string stateID)
-        {
-            var retTeamScores = new Dictionary<TeamType, int>();
-
-            int blueIndex = 2;
-            int redIndex = 1;
-
-            string regex = @"(\d+)-(\d+)-(\w+)";
-            var match = Regex.Match(stateID, regex);
-
-            string redRawValue = match.Groups.ElementAt(redIndex).Value;
-            int redScore = int.Parse(redRawValue);
-            retTeamScores.Add(TeamType.RedTeam, redScore);
-
-            string blueRawValue = match.Groups.ElementAt(blueIndex).Value;
-            int blueScore = int.Parse(blueRawValue);
-            retTeamScores.Add(TeamType.BlueTeam, blueScore);
-
-            return retTeamScores;
-        }
-
         private double GetNewStateValue(double currentValue, double reward, double maxNextValue)
         {
             // Q-Learning Algorithm
@@ -314,7 +292,7 @@ namespace Assets.Scripts.MachineLearning.V5
             }
             else
             {
-                Dictionary<TeamType, int> currentScores = GetTeamScorePercentile(gameStateID);
+                Dictionary<TeamType, int> currentScores = GameStateHelper.GetTeamScorePercentile(gameStateID);
                 int redScore = currentScores.GetValueOrDefault(TeamType.RedTeam);
                 int blueScore = currentScores.GetValueOrDefault(TeamType.BlueTeam);
 
