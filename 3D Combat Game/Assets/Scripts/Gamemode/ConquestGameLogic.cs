@@ -123,7 +123,7 @@ namespace Assets.Scripts.Gamemode.Conquest
                     GameSettings.StartDataNormalization();
                     HasSavedData = true;
                 }
-                else if (GameSettings.IsNonStopMode)
+                else if (GameSettings.ShouldPlayAnotherGame())
                 {
                     DontDestroyOnLoad(GameSettings);
                     SceneManager.LoadScene(Scenes.ConqustGameMode);

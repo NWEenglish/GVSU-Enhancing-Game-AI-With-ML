@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
@@ -11,7 +11,10 @@ namespace Assets.Scripts.Gamemode
     {
         public TeamType? PlayersTeam { get; private set; }
         public Dictionary<TeamType, BotAILevel> TeamAILevels { get; private set; } = new Dictionary<TeamType, BotAILevel>();
-        public bool IsNonStopMode { get; private set; }
+
+        private bool IsNonStopMode = false;
+        private int GamesPlayed = 0;
+        private int MaxGames => 1000;
 
         private DataNormalization DataNormalization = new DataNormalization();
         private Algorithms MLAlgorithms = new Algorithms();
@@ -34,11 +37,17 @@ namespace Assets.Scripts.Gamemode
 
         public void StartDataNormalization()
         {
+            GamesPlayed++;
             DataNormalization.StartProcess();
             TeamAILevels
                 .Where(kvp => kvp.Value == BotAILevel.SmartAI)
                 .ToList()
                 .ForEach(kvp => MLAlgorithms.StartSaveProcess(kvp.Key));
+        }
+
+        public bool ShouldPlayAnotherGame()
+        {
+            return IsNonStopMode && GamesPlayed <= MaxGames;
         }
     }
 }
