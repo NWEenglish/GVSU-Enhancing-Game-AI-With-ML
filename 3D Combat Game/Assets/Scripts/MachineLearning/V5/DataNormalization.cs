@@ -14,10 +14,14 @@ namespace Assets.Scripts.MachineLearning.V5
 
         public void StartProcess()
         {
+            string rawDataDirectory = MLConstants.RawDataFilePath;
+            if (!Directory.Exists(rawDataDirectory))
+            {
+                Directory.CreateDirectory(rawDataDirectory);
+            }
+
             // Check for new files for processing
-            List<string> rawFiles = Directory.Exists(MLConstants.RawDataFilePath)
-                ? Directory.GetFiles(MLConstants.RawDataFilePath).ToList()
-                : new List<string>();
+            List<string> rawFiles = Directory.GetFiles(MLConstants.RawDataFilePath).ToList();
 
             if (rawFiles.Any())
             {

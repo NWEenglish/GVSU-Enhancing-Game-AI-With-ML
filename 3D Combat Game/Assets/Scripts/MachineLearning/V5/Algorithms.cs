@@ -21,8 +21,14 @@ namespace Assets.Scripts.MachineLearning.V5
 
         private void LoadLearnedKnowledge(TeamType team)
         {
+            string directory = MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString());
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             // Check for saved data that's been learned for this team
-            string mostRecentFile = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString()))
+            string mostRecentFile = Directory.GetFiles(directory)
                 .Where(fileName => GetTeamFromFileName(fileName) == team)
                 .OrderByDescending(fileName => GetGenFromFileName(fileName))
                 .FirstOrDefault();
@@ -56,8 +62,14 @@ namespace Assets.Scripts.MachineLearning.V5
 
         public void StartSaveProcess(TeamType teamToProcess)
         {
+            string normalizedDataDirectory = MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString());
+            if (!Directory.Exists(normalizedDataDirectory))
+            {
+                Directory.CreateDirectory(normalizedDataDirectory);
+            }
+
             // Check for new normalized data; continue if any present
-            List<string> normFiles = Directory.GetFiles(MLConstants.NormalizedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString())).ToList();
+            List<string> normFiles = Directory.GetFiles(normalizedDataDirectory).ToList();
 
             if (normFiles.Any())
             {
@@ -73,8 +85,14 @@ namespace Assets.Scripts.MachineLearning.V5
                     }
                 }
 
+                string learnedDataDirectory = MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString());
+                if (!Directory.Exists(learnedDataDirectory))
+                {
+                    Directory.CreateDirectory(learnedDataDirectory);
+                }
+
                 // Check for saved data that's been learned for this team
-                List<string> teamLearnedFiles = Directory.GetFiles(MLConstants.LearnedDataFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString()))
+                List<string> teamLearnedFiles = Directory.GetFiles(learnedDataDirectory)
                     .Where(fileName => GetTeamFromFileName(fileName) == teamToProcess)
                     .ToList();
 
