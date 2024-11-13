@@ -115,8 +115,14 @@ namespace Assets.Scripts.MachineLearning.V5
                 {
                     foreach (string normFile in normFiles)
                     {
+                        string directory = MLConstants.NormalizedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString());
+                        if (!Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
                         string fileName = Path.GetFileName(normFile);
-                        File.Move(normFile, $"{MLConstants.NormalizedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString())}/{fileName}");
+                        File.Move(normFile, $"{directory}/{fileName}");
                     }
 
                     if (currentGeneration % 10 == 0)
@@ -127,10 +133,16 @@ namespace Assets.Scripts.MachineLearning.V5
 
                         foreach (string file in oldLearnedFiles)
                         {
-                            string fileName = Path.GetFileName(file);
-                            string filePath = MLConstants.LearnedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString());
 
-                            File.Move(file, $"{filePath}/{fileName}");
+                            string fileName = Path.GetFileName(file);
+                            string directory = MLConstants.LearnedArchivedFilePath.Replace(MLConstants.VersionNumberPlacement, GameStateHelper.Version.ToString());
+
+                            if (!Directory.Exists(directory))
+                            {
+                                Directory.CreateDirectory(directory);
+                            }
+
+                            File.Move(file, $"{directory}/{fileName}");
                         }
                     }
                 }

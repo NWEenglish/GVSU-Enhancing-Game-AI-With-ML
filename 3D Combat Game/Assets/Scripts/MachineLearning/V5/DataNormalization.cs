@@ -15,7 +15,9 @@ namespace Assets.Scripts.MachineLearning.V5
         public void StartProcess()
         {
             // Check for new files for processing
-            List<string> rawFiles = Directory.GetFiles(MLConstants.RawDataFilePath).ToList();
+            List<string> rawFiles = Directory.Exists(MLConstants.RawDataFilePath)
+                ? Directory.GetFiles(MLConstants.RawDataFilePath).ToList()
+                : new List<string>();
 
             if (rawFiles.Any())
             {
@@ -27,8 +29,15 @@ namespace Assets.Scripts.MachineLearning.V5
                     // Move files to archive
                     if (fileSuccessful)
                     {
+                        string directory = MLConstants.RawDataArchiveFilePath;
+
+                        if (!Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
                         string fileName = Path.GetFileName(file);
-                        File.Move(file, $"{MLConstants.RawDataArchiveFilePath}/{fileName}");
+                        File.Move(file, $"{directory}/{fileName}");
                     }
                 }
             }
