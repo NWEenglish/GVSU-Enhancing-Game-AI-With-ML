@@ -162,7 +162,7 @@ namespace Assets.Scripts.MachineLearning
 
                     foreach (var uBot in unassignedBots)
                     {
-                        currentBotTargets[uBot] = post.Value;
+                        currentBotTargets[uBot] = post.Key;
                     }
                 }
             }

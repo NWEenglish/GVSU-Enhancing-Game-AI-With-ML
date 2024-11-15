@@ -13,8 +13,8 @@ namespace Assets.Scripts.MachineLearning.V5
     public class Algorithms
     {
         private const double LearningRate = 0.5;
-        private const double RiskFactor = 0.95;
         private const double DiscountFactor = 1;
+        private int GamesPlayed = 0;
 
         private NormalizedGameState LoadedLearnedDate = null;
         private List<LearnedGameState> LearnedGameStates = null;
@@ -36,6 +36,7 @@ namespace Assets.Scripts.MachineLearning.V5
             if (!string.IsNullOrEmpty(mostRecentFile))
             {
                 LoadedLearnedDate = ReadInGameState(mostRecentFile);
+                GamesPlayed = GetGenFromFileName(mostRecentFile) + 1;
             }
 
             if (LoadedLearnedDate != null)
@@ -170,7 +171,7 @@ namespace Assets.Scripts.MachineLearning.V5
         public bool ShouldUseRandomValue()
         {
             var value = Random.Range(0f, 1f);
-            return value > RiskFactor;
+            return value > GetRiskFactor();
         }
 
         private NormalizedGameState BackPropagate(NormalizedGameState currentKnowledge, NormalizedGameState gameState)
@@ -367,6 +368,25 @@ namespace Assets.Scripts.MachineLearning.V5
             string teamStr = Regex.Match(fileName, @"(\d+)-").Groups[1].Value;
             int team = int.Parse(teamStr);
             return (TeamType)team;
+        }
+
+        // Slight misnomer - The chance to use a random value should be 1 - RickFactor.
+        // Ex: RiskFactor = 0.90 => 10% chance to use a random value.
+        private double GetRiskFactor()
+        {
+            double retRiskFactor;
+
+            if (GamesPlayed < 200)
+            {
+                int multiplier = GamesPlayed / 50;
+                retRiskFactor = 0.75 + (multiplier * 0.05);
+            }
+            else
+            {
+                retRiskFactor = 0.95;
+            }
+
+            return retRiskFactor;
         }
     }
 }
