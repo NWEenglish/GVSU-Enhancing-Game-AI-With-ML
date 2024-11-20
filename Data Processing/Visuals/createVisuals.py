@@ -111,6 +111,7 @@ def chartGameData(team:Team, binCount:int, degrees:int, gameData:dict, version:i
     ax.scatter(binGroup, losses, label=losingTeamName, marker='s', color=losingColor)
     ax.scatter(binGroup, ties, label='Ties', marker='^', color='gray')
 
+    # Plot
     plt.plot(binGroup, np.polyval(np.polyfit(binGroup, wins, degrees), binGroup), color=winningColor)
     plt.plot(binGroup, np.polyval(np.polyfit(binGroup, losses, degrees), binGroup), color=losingColor)
     plt.plot(binGroup, np.polyval(np.polyfit(binGroup, ties, degrees), binGroup), color='gray')
@@ -118,7 +119,7 @@ def chartGameData(team:Team, binCount:int, degrees:int, gameData:dict, version:i
     ax.legend()
     ax.set_xlabel('Epochs')
     ax.set_ylabel('Outcomes')
-    ax.set_title(f'Number of Wins by Team - V{version}')
+    ax.set_title(f'Number of Wins by Team')
 
     plt.show()
 
@@ -128,8 +129,8 @@ if (__name__ == "__main__"):
     team = Team.Red
 
     auditedVersion:int = 5
-    degrees:int = 1
-    binCount:int = 1
+    degrees:int = 3
+    binCount:int = 10
 
     gameData = loadAllFiles(team, archivedDataDirectory, binCount, auditedVersion, runningVersion)
     chartGameData(team, binCount, degrees, gameData, auditedVersion)
