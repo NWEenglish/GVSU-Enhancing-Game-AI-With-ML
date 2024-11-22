@@ -19,8 +19,8 @@ namespace Assets.Scripts.Gamemode.Conquest
 
         private const int PointsPerTick = 1;
         private const float TickLengthSec = 2.5f;
-        private const float GameOverProcessLength = 20f;
 
+        private float GameOverProcessLength;
         private float LastTimePointsDistributed;
         private GameObject GameOverPanel;
         private float? GameOverProcessStart;
@@ -44,6 +44,11 @@ namespace Assets.Scripts.Gamemode.Conquest
             GameOverPanel.SetActive(false);
 
             GameSettings = GameObject.Find(Objects.GameSettings).GetComponent<GameSettings>();
+
+            // If the player isn't partaking, the game over display can be a lot less
+            GameOverProcessLength = GameSettings.PlayersTeam == TeamType.Neutral
+                ? 1f
+                : 20f;
         }
 
         private void FixedUpdate()
