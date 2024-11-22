@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -70,7 +70,9 @@ namespace Assets.Scripts.MachineLearning.V5
             }
 
             // Check for new normalized data; continue if any present
-            List<string> normFiles = Directory.GetFiles(normalizedDataDirectory).ToList();
+            List<string> normFiles = Directory.GetFiles(normalizedDataDirectory)
+                .Where(fileName => GetTeamFromFileName(fileName) == teamToProcess)
+                .ToList();
 
             if (normFiles.Any())
             {
@@ -148,6 +150,7 @@ namespace Assets.Scripts.MachineLearning.V5
                     {
                         List<string> oldLearnedFiles = teamLearnedFiles
                             .Where(fileName => GetGenFromFileName(fileName) <= currentGeneration - 10)
+                            .Where(fileName => GetTeamFromFileName(fileName) == teamToProcess)
                             .ToList();
 
                         foreach (string file in oldLearnedFiles)
