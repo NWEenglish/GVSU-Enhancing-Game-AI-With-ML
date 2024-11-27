@@ -64,5 +64,12 @@ namespace Assets.Scripts.Enums
         {
             return team.ToString().ToUpper().First();
         }
+
+        public static TeamType GetEnemyTeam(TeamType currentTeam)
+        {
+            return currentTeam == TeamType.RedTeam
+                ? TeamType.BlueTeam
+                : TeamType.RedTeam;
+        }
     }
 }

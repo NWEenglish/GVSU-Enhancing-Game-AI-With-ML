@@ -4,8 +4,8 @@ using System.Linq;
 using Assets.Scripts.Entities;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Gamemode.Conquest;
-using Assets.Scripts.MachineLearning.Helpers;
 using Assets.Scripts.MachineLearning.Models;
+using Assets.Scripts.MachineLearning.V5;
 using UnityEngine;
 
 namespace Assets.Scripts.MachineLearning
@@ -32,7 +32,8 @@ namespace Assets.Scripts.MachineLearning
             GameLogic = GameObject.FindObjectOfType<ConquestGameLogic>();
             GameState = new RawGameState()
             {
-                Team = Team
+                Team = Team,
+                Version = GameStateHelper.Version
             };
         }
 
@@ -62,37 +63,47 @@ namespace Assets.Scripts.MachineLearning
             }
             else if (LastGameState != currentState || Time.time >= LastStateSave + MinTimeBetweeenSaves)
             {
+                bool isNewGame = string.IsNullOrEmpty(LastGameState);
+                bool shouldEvaluateNextStates = isNewGame;
+
+                if (!isNewGame)
+                {
+                    // If we're in a new percentile state, update targets
+                    Dictionary<TeamType, int> lastGameStateScores = GameStateHelper.GetTeamScorePercentile(LastGameState);
+                    Dictionary<TeamType, int> currGameStateScores = GameStateHelper.GetTeamScorePercentile(currentState);
+                    shouldEvaluateNextStates = lastGameStateScores.Any(kvp => currGameStateScores[kvp.Key] != kvp.Value);
+                }
+
+                if (shouldEvaluateNextStates)
+                {
+                    // Get updated list of next moves
+                    EvaluateNextStates(currentState);
+                }
+
                 LastGameState = currentState;
                 LastStateSave = Time.time;
                 GameState.States.Add(GetGameState());
-
-                // Get updated list of next moves
-                EvaluateNextStates(currentState);
             }
         }
 
         private void EvaluateNextStates(string currentState)
         {
-            var nextStates = MLAlgorithm.GetNextStates(Team, currentState);
-
-            // Order states by order of magnitude, and grab enough for 1 per bot
-            var orderedStates = nextStates
-                .OrderByDescending(state => Math.Abs(state.Value))
-                .Select(state => state.StateID)
-                .Take(SmartBots.Count);
+            var orderedStates = GameStateHelper.GetOrderedStates(MLAlgorithm, Team, currentState, SmartBots.Count());
 
             // Assign bots based on magnitude and current targets
             Dictionary<SmartBot, int> currentBotTargets = new Dictionary<SmartBot, int>();
+
+            // Get each bots current target
             foreach (var bot in SmartBots)
             {
-                int? postNumber = bot?.Target?.gameObject?.GetComponent<CommandPostLogic>()?.GetPostNumber();
-                currentBotTargets.Add(bot, postNumber ?? 0);
+                int postNumber = bot?.Target?.gameObject?.GetComponent<CommandPostLogic>()?.GetPostNumber() ?? 0;
+                currentBotTargets.Add(bot, postNumber);
             }
 
             List<int> postChanges = new List<int>();
             foreach (var state in orderedStates)
             {
-                postChanges.AddRange(DetermineStateDifferences(currentState, state));
+                postChanges.AddRange(GameStateHelper.DetermineStateDifferences(currentState, state, Team));
             }
 
             Dictionary<int, int> postCounts = new Dictionary<int, int>();
@@ -115,16 +126,15 @@ namespace Assets.Scripts.MachineLearning
             // First pass is to unassign extra bots
             foreach (var post in sortedPostNeed)
             {
-                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Value);
+                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Key);
                 int alreadyAssigned = botsAssignedToPost.Count();
-                int netChange = post.Value - alreadyAssigned;
+                int netChange = Math.Abs(post.Value - alreadyAssigned);
 
                 if (netChange < 0)
                 {
-                    int botsToRemove = Math.Abs(netChange);
                     var botsBeingRemoved = botsAssignedToPost
                         .OrderByDescending(kvp => kvp.Key.DistanceToTarget())
-                        .Take(botsToRemove)
+                        .Take(netChange)
                         .ToList();
 
                     foreach (var bot in botsBeingRemoved)
@@ -137,23 +147,22 @@ namespace Assets.Scripts.MachineLearning
             // Second pass is to assign extra bots
             foreach (var post in sortedPostNeed)
             {
-                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Value);
+                IEnumerable<KeyValuePair<SmartBot, int>> botsAssignedToPost = currentBotTargets.Where(kvp => kvp.Value == post.Key);
                 int alreadyAssigned = botsAssignedToPost.Count();
-                int netChange = post.Value - alreadyAssigned;
+                int netChange = Math.Abs(post.Value - alreadyAssigned);
 
                 if (netChange > 0)
                 {
-                    int botsToAdd = Math.Abs(netChange);
                     var unassignedBots = currentBotTargets
                         .Where(kvp => kvp.Value == 0)
                         .OrderBy(kvp => kvp.Key.DistanceToTarget())
                         .Select(kvp => kvp.Key)
-                        .Take(botsToAdd)
+                        .Take(netChange)
                         .ToList();
 
                     foreach (var uBot in unassignedBots)
                     {
-                        currentBotTargets[uBot] = post.Value;
+                        currentBotTargets[uBot] = post.Key;
                     }
                 }
             }
@@ -171,22 +180,6 @@ namespace Assets.Scripts.MachineLearning
 
                 bot.UpdateTarget(newTarget);
             }
-        }
-
-        private List<int> DetermineStateDifferences(string currentState, string proposedState)
-        {
-            List<int> postsChanged = new List<int>();
-
-            // Skip the first two since those are the percentiles
-            for (int i = 2; i < proposedState.Length; i++)
-            {
-                if (currentState.ElementAtOrDefault(i) != proposedState.ElementAtOrDefault(i))
-                {
-                    postsChanged.Add(i);
-                }
-            }
-
-            return postsChanged;
         }
 
         private RawGameState.GameState GetGameState()

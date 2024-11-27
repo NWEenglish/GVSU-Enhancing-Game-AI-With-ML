@@ -14,5 +14,12 @@ namespace Assets.Scripts.MachineLearning.Models
             public string StateID;
             public double Value;
         }
+
+        public List<LearnedGameState> ToLearnedGameStates()
+        {
+            List<LearnedGameState> retLearnedGameStates = new List<LearnedGameState>();
+            States.ForEach(state => retLearnedGameStates.Add(new LearnedGameState(state.StateID, state.Value)));
+            return retLearnedGameStates;
+        }
     }
 }
