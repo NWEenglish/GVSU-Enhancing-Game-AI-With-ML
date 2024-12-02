@@ -19,7 +19,7 @@ def getTeamName(team:Team):
     return retName 
 
 # Loads a team's raw data from the provided directory.
-def loadAllFiles(team:Team, directory:str, binCount:int, auditedVersion:int, runningVersion:int):
+def loadAllFiles(team:Team, directory:str, binCount:int, auditedVersion:int, runningVersion:int, gamesToExclude:int):
     allGameData:dict = {}
     files = []
 
@@ -27,11 +27,15 @@ def loadAllFiles(team:Team, directory:str, binCount:int, auditedVersion:int, run
         files = os.listdir(f'{directory} - V{auditedVersion}')
     else:
         files = os.listdir(directory)
-
+    
     files.sort()
 
     versionFiles = [f for f in files if not isFileOtherGameVersionArchived(directory, auditedVersion, f)]
     teamFiles = [f for f in versionFiles if f.startswith(str(team.value))]
+
+    if gamesToExclude is not None:
+        numberOfFiles = len(teamFiles) - 1 - gamesToExclude
+        teamFiles = teamFiles[(-1 * numberOfFiles):]
 
     while len(teamFiles) >= binCount:
         workList = teamFiles[:binCount]
@@ -131,6 +135,7 @@ if (__name__ == "__main__"):
     auditedVersion:int = 5
     degrees:int = 3
     binCount:int = 10
+    gamesToExclude:int = 1000
 
-    gameData = loadAllFiles(team, archivedDataDirectory, binCount, auditedVersion, runningVersion)
+    gameData = loadAllFiles(team, archivedDataDirectory, binCount, auditedVersion, runningVersion, gamesToExclude)
     chartGameData(team, binCount, degrees, gameData, auditedVersion)
